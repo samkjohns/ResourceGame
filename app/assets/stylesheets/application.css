@@ -13,3 +13,15 @@
  *= require_tree .
  *= require_self
  */
+
+html, body, div, span, p, a, button, input, li,
+textarea, aside, section, h1, h2, h3, h4, ul {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  outline: 0;
+
+  font: inherit;
+  color: inherit;
+  background: transparent;
+}
