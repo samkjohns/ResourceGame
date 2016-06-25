@@ -39,7 +39,8 @@ Battlefield.prototype._calcOrder = function () {
 Battlefield.prototype.render = function (ctx) {
   var drawnLines = {};
   var drawnHexes = {};
-  var sideThree = Math.sqrt(3) * 25;
+  // var sideThree = Math.sqrt(3) * 25;
+  // console.log(sideThree);
 
   function drawHex (west) {
     var startX = west[0];
@@ -137,9 +138,8 @@ Battlefield.prototype.render = function (ctx) {
 
   var vertices;
   var currentWest = [10, 10 + Battlefield.SIDE_THREE];
-  console.log("drawing?");
+
   this.grid.forEach(function (hex, rowIdx, colIdx) {
-    console.log("drawing " + currentWest);
     vertices = drawHex(currentWest);
 
     if (colIdx === this.grid.cols - 1) {

@@ -20,14 +20,19 @@ HexGrid.addPoints = function (p1, p2) {
 };
 
 HexGrid.prototype.valueAt = function (row, col) {
-  if (col) {
+  if (col !== undefined) {
     return this._grid[row][col];
   } return this._grid[row[0]][row[1]];
-}
+};
+
+HexGrid.prototype.setValue = function (point, value) {
+  this._grid[point[0]][point[1]] = value;
+  return value;
+};
 
 HexGrid.prototype.inBounds = function (row, col) {
   return row >= 0 && row < this.rows && col >= 0 && col < this.cols;
-}
+};
 
 var _neighborCoords = {
   NW: [0, -1],
@@ -74,14 +79,105 @@ HexGrid.prototype.northEastOf = function (row, col) {
 };
 
 HexGrid.prototype.forEach = function (callback) {
-  console.log("in forEach");
   this._grid.forEach(function (row, rowIdx) {
-    // debugger
     row.forEach(function (hex, colIdx) {
-      // debugger
       callback(hex, rowIdx, colIdx);
     });
   });
 };
 
+HexGrid.verticesFor = function (
+  rowIdx, colIdx, edgeLength, xOffset, yOffset
+) {
+  var halfEdge = edgeLength / 2;
+  var sideThree = Math.sqrt(3) * halfEdge;
+
+  var westX = xOffset + (colIdx * (edgeLength + halfEdge));
+  var westY;
+
+  if (colIdx % 2 === 0) {
+    westY = yOffset + sideThree + (rowIdx * sideThree * 2);
+  } else {
+    westY = yOffset + (2 * sideThree) + (rowIdx * sideThree * 2);
+  }
+
+  var startX = westX;
+  var startY = westY;
+  var vertices = {
+    W: [westX, westY],
+
+    NW: [
+      startX + halfEdge,
+      startY - sideThree
+    ],
+
+    NE: [
+      startX + (halfEdge + edgeLength),
+      startY - sideThree
+    ],
+
+    E: [
+      startX + (2 * edgeLength),
+      startY
+    ],
+
+    SW: [
+      startX + halfEdge,
+      startY + sideThree
+    ],
+
+    SE: [
+      startX + halfEdge + edgeLength,
+      startY + sideThree
+    ],
+  };
+
+  return vertices;
+};
+
+HexGrid.originOf = function (
+  rowIdx, colIdx, edgeLength, xOffset, yOffset
+) {
+  var west = HexGrid.verticesFor(
+    rowIdx, colIdx, edgeLength, xOffset, yOffset
+  ).W;
+
+  return [
+    west[0] + edgeLength, west[1]
+  ];
+};
+
+HexGrid.prototype.clickedHex = function (
+  evnt, edgeLength, xOffset, yOffset
+) {
+  var sideThree = Math.sqrt(3) * (edgeLength / 2);
+  var clickedPoint = [evnt.pageX, evnt.pageY];
+  var col = Math.floor(
+    (evnt.pageX - xOffset) / (edgeLength * 1.5)
+  );
+
+  var row;
+  if (col % 2 === 0) {
+    row = Math.floor(
+      (evnt.pageY - yOffset - (2 * sideThree)) /
+      (2 * sideThree)
+    ) + 1;
+
+  } else {
+    row = Math.floor(
+      (evnt.pageY - yOffset - sideThree) /
+      (2 * sideThree)
+    );
+  }
+  row = row < 0 ? 0 : row;
+
+
+  return {
+    hex: this._grid[row][col],
+    row: row,
+    col: col
+  };
+};
+
+window.HexGrid = HexGrid;
 module.exports = HexGrid;
