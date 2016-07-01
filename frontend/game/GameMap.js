@@ -2,7 +2,7 @@ var testGameMap = require('./resources/testmap');
 
 function GameMap () {
   this.hexGameMap = testGameMap;
-  this.selectedObject = null;
+  this.creatureSelection = null;
 }
 
 GameMap.EDGE_LENGTH = 20;
@@ -14,14 +14,15 @@ GameMap.colors = {
 };
 
 GameMap.prototype.placeObjectAt = function (row, col, object) {
-  // var currObjs = this.hexGameMap.valueAt(row, col).objects;
-  // currObjs = currObjs.concat(objects);
-  // this.hexGameMap.valueAt(row, col).objects = currObjs;
   this.hexGameMap.valueAt(row, col).object = object;
 };
 
 GameMap.prototype.placeCreatureAt = function (row, col, creature) {
   this.hexGameMap.valueAt(row, col).creature = creature;
+};
+
+GameMap.prototype.setSelectedPathTo = function (selection) {
+
 };
 
 GameMap.prototype.handleClick = function (evnt) {
@@ -52,11 +53,11 @@ GameMap.prototype.handleClick = function (evnt) {
   } else if (hexVal.creature) {
     this.creatureSelection = {
       creature: hexVal.creature,
-      hexCoords: [selection.row, selection.col]
+      hexCoords: [selection.row, selection.col],
+      path: null
     }
 
     return false;
-    // console.log("selected " + this.selectedObject);
   }
 };
 
@@ -224,4 +225,5 @@ GameMap.prototype.render = function (ctx) {
   }.bind(this));
 };
 
+window.findPath = require('../util/helpers').findPath;
 module.exports = GameMap;

@@ -44,18 +44,24 @@ var App = React.createClass({
           this.loadedImages++;
 
           this.context.fillRect(0, 0, window.DIM_X, window.DIM_Y);
+
+          this.context.font = '48px sans serif';
           this.context.strokeText(
-            this.loadedImages + " / " + this.loaderCount + " loaded", 100, 100
+            this.loadedImages + " / " + this.loaderCount + " loaded",
+            window.DIM_X / 2, window.DIM_Y / 2
           );
 
           if (this.loadedImages == this.loaderCount) {
-            this.startGame();
+            setTimeout(this.startGame, 350);
           }
         }.bind(this)
       }.bind(this));
     }.bind(this);
 
-    this.loaderCount = 3;
+    this.loaderCount =
+    Object.keys(window.resourceImages.spriteSources).length +
+    Object.keys(window.resourceImages.iconSources).length;
+
     this.loadedImages = 0;
 
     loadFolder('spriteSources');

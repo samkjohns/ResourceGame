@@ -54,6 +54,14 @@ HexGrid.prototype.neighborsOf = function (row, col) {
   return neighbors;
 };
 
+HexGrid.prototype.neighborCoords = function (row, col) {
+  return Object.keys(_neighborCoords).map(function (key) {
+    return HexGrid.addPoints(_neighborCoords[key], [row, col]);
+  }).filter(function (point) {
+    return this.inBounds(point);
+  }.bind(this));
+};
+
 HexGrid.prototype.southWestOf = function (row, col) {
   return this.neighborsOf(row, col).SW;
 };
