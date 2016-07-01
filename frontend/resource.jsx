@@ -5,6 +5,8 @@ var React = require('react'),
     Battlefield = require('./game/Battlefield'),
     GameMap = require('./game/GameMap');
 
+require('./util/PathFinder.js');
+
 window.DIM_X = 1250;
 window.DIM_Y = 800;
 

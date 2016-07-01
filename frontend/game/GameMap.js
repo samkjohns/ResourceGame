@@ -225,5 +225,5 @@ GameMap.prototype.render = function (ctx) {
   }.bind(this));
 };
 
-window.findPath = require('../util/helpers').findPath;
+// window.findPath = require('../util/helpers').findPath;
 module.exports = GameMap;

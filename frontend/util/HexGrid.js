@@ -34,7 +34,7 @@ HexGrid.prototype.inBounds = function (row, col) {
   return row >= 0 && row < this.rows && col >= 0 && col < this.cols;
 };
 
-var _neighborCoords = {
+var _oddNeighborCoords = {
   NW: [0, -1],
   N: [-1, 0],
   NE: [0, 1],
@@ -43,10 +43,20 @@ var _neighborCoords = {
   SW: [1, -1]
 };
 
+var _evenNeighborCoords = {
+  NW: [-1, -1],
+  N: [-1, 0],
+  NE: [-1, 1],
+  SE: [0, 1],
+  S: [1, 0],
+  SW: [0, -1]
+};
+
 HexGrid.prototype.neighborsOf = function (row, col) {
   var neighbors = {};
 
-  Object.keys(_neighborCoords).forEach(function (key) {
+  var coords = col % 2 === 0 ? _evenNeighborCoords : _oddNeighborCoords;
+  Object.keys(coords).forEach(function (key) {
     var gridCoords = HexGrid.addPoints([row, col], _neighborCoords[key]);
     neighbors[key] = this.valueAt(gridCoords);
   }.bind(this));
@@ -55,10 +65,11 @@ HexGrid.prototype.neighborsOf = function (row, col) {
 };
 
 HexGrid.prototype.neighborCoords = function (row, col) {
-  return Object.keys(_neighborCoords).map(function (key) {
-    return HexGrid.addPoints(_neighborCoords[key], [row, col]);
+  var coords = col % 2 === 0 ? _evenNeighborCoords : _oddNeighborCoords;
+  return Object.keys(coords).map(function (key) {
+    return HexGrid.addPoints(coords[key], [row, col]);
   }).filter(function (point) {
-    return this.inBounds(point);
+    return this.inBounds(point[0], point[1]);
   }.bind(this));
 };
 
@@ -179,7 +190,6 @@ HexGrid.prototype.clickedHex = function (
   }
   row = row < 0 ? 0 : row;
 
-
   return {
     hex: this._grid[row][col],
     row: row,
@@ -187,5 +197,5 @@ HexGrid.prototype.clickedHex = function (
   };
 };
 
-window.HexGrid = HexGrid;
+// window.HexGrid = HexGrid;
 module.exports = HexGrid;
