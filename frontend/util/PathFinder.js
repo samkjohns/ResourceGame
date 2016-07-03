@@ -48,13 +48,13 @@ function breadthFirstPath(hexGrid, start, goal) {
   var startKey = JSON.stringify(start);
   var goalKey = JSON.stringify(goal);
   cameFrom[startKey] = null;
-  console.log("starting from " + startKey);
+  // console.log("starting from " + startKey);
 
   var current, currentKey;
   while(!frontier.empty()) {
     current = frontier.dequeue();
     currentKey = JSON.stringify(current);
-    console.log("currently looking at " + currentKey);
+    // console.log("currently looking at " + currentKey);
 
     if (currentKey === goalKey) {
       return _reconstructPath(cameFrom, current);
@@ -94,24 +94,25 @@ function _reconstructPath(cameFrom, current) {
   return totalPath;
 }
 
-var HexGrid = require('./HexGrid.js');
-var grid = new HexGrid(5, 5);
-for (var i = 0; i < 5; i++) {
-  for (var j = 0; j < 5; j++) {
-    grid.setValue([i, j], {occupied: false});
-  }
-}
-grid.valueAt(1, 1).occupied = true;
-grid.valueAt(1, 2).occupied = true;
-grid.valueAt(2, 1).occupied = true;
-
-var path = breadthFirstPath(grid, [0, 0], [4, 4]);
-if (path) {
-  console.log("about to print path");
-  path.forEach(console.log.bind(console));
-} else {
-  console.log("no path");
-}
+// var HexGrid = require('./HexGrid.js');
+// var grid = new HexGrid(5, 5);
+// for (var i = 0; i < 5; i++) {
+//   for (var j = 0; j < 5; j++) {
+//     grid.setValue([i, j], {occupied: false});
+//   }
+// }
+// grid.valueAt(1, 1).occupied = true;
+// grid.valueAt(1, 2).occupied = true;
+// grid.valueAt(2, 1).occupied = true;
+//
+// var path = breadthFirstPath(grid, [0, 0], [4, 4]);
+// if (path) {
+//   path.forEach(function (coords) {
+//     console.log(coords);
+//   });
+// } else {
+//   console.log("no path");
+// }
 
 module.exports = breadthFirstPath;
 

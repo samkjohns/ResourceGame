@@ -10,6 +10,10 @@ for (var i = 0; i < 10; i++) {
   }
 }
 
+// testMap.valueAt(4, 4).obstacle = true;
+// testMap.valueAt(4, 5).obstacle = true;
+// testMap.valueAt(4, 6).obstacle = true;
+
 module.exports = testMap;
 
 // {

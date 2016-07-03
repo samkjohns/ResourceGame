@@ -1,4 +1,5 @@
 var testGameMap = require('./resources/testmap');
+var breadthFirstPath = require('../util/PathFinder.js');
 
 function GameMap () {
   this.hexGameMap = testGameMap;
@@ -21,8 +22,23 @@ GameMap.prototype.placeCreatureAt = function (row, col, creature) {
   this.hexGameMap.valueAt(row, col).creature = creature;
 };
 
-GameMap.prototype.setSelectedPathTo = function (selection) {
+GameMap.prototype.setSelectedPathTo = function (path) {
+  this.resetPath();
+  if (path) {
+    this.path = path;
+    path.forEach(function (coords) {
+      this.hexGameMap.valueAt(coords).inPath = true;
+    }.bind(this));
+  } else {
+    this.path = [];
+  }
+};
 
+GameMap.prototype.resetPath = function () {
+  this.path && this.path.forEach(function (coords) {
+    this.hexGameMap.valueAt(coords).inPath = false;
+  }.bind(this));
+  this.path = [];
 };
 
 GameMap.prototype.handleClick = function (evnt) {
@@ -34,49 +50,40 @@ GameMap.prototype.handleClick = function (evnt) {
   var hexVal = selection.hex;
 
   if (this.creatureSelection) {
-    this.placeCreatureAt(
-      this.creatureSelection.hexCoords[0],
-      this.creatureSelection.hexCoords[1],
-      null
-    );
 
-    this.placeCreatureAt(
-      selection.row,
-      selection.col,
-      this.creatureSelection.creature
-    );
+    // if the click is on a selected creature, deselect
+    if (hexVal.creature === this.creatureSelection) {
+      this.creatureSelection = null;
+      this.resetPath();
+      return false;
 
-    this.creatureSelection = null;
+    // else set a path to the clicked destination
+    } else {
+      var path = breadthFirstPath(
+        this.hexGameMap,
+        this.creatureSelection.hexCoords,
+        [selection.row, selection.col]
+      );
 
-    return true;
+      this.setSelectedPathTo(path);
+      return path.length > 0;
+    }
 
   } else if (hexVal.creature) {
     this.creatureSelection = {
       creature: hexVal.creature,
-      hexCoords: [selection.row, selection.col],
-      path: null
+      hexCoords: [selection.row, selection.col]
     }
 
     return false;
   }
 };
 
-GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
-  // hex.objects.forEach(function (obj) {
-  //   var nwX, nwY;
-  //
-  //   nwX = (colIdx * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 8;
-  //   if (colIdx % 2 === 0) {
-  //     nwY = (rowIdx * GameMap.SIDE_THREE * 2) + 14;
-  //   } else {
-  //     nwY = (rowIdx * GameMap.SIDE_THREE * 2) + 12 + GameMap.EDGE_LENGTH;
-  //   }
-  //
-  //   var upperLeft = [nwX + GameMap.HALF_EDGE, nwY];
-  //
-  //   ctx.drawImage(obj.image, upperLeft[0], upperLeft[1], 25, 25);
-  // });
+GameMap.prototype.getFillType = function (hex, type) {
+  return hex.inPath ? "rgba(255, 0, 0, .5)" : GameMap.colors[hex.type];
+};
 
+GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
   var nwX, nwY;
   nwX = (colIdx * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 8;
   if (colIdx % 2 === 0) {
@@ -97,6 +104,7 @@ GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
 GameMap.prototype.render = function (ctx) {
   var drawnLines = {};
   var drawnHexes = {};
+  var self = this;
 
   function drawHex (west, hex) {
     var startX = west[0];
@@ -183,9 +191,9 @@ GameMap.prototype.render = function (ctx) {
       ctx.strokeStyle = "rgba(0, 0, 0, .4)";
       ctx.stroke();
 
-      ctx.fillStyle = GameMap.colors[hex.type];
+      ctx.fillStyle = self.getFillType(hex);
+      // ctx.fillStyle = GameMap.colors[hex.type];
       ctx.fill();
-
 
       drawnHexes[hexJSON] = true;
     }
