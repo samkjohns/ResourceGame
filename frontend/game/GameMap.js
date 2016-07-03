@@ -48,6 +48,7 @@ GameMap.prototype.handleClick = function (evnt) {
     10, 10
   );
   var hexVal = selection.hex;
+  if (!hexVal) { return false; }
 
   if (this.creatureSelection) {
 
@@ -66,7 +67,7 @@ GameMap.prototype.handleClick = function (evnt) {
       );
 
       this.setSelectedPathTo(path);
-      return path.length > 0;
+      return path && path.length > 0;
     }
 
   } else if (hexVal.creature) {
@@ -77,6 +78,26 @@ GameMap.prototype.handleClick = function (evnt) {
 
     return false;
   }
+};
+
+GameMap.prototype.move = function () {
+  if (this.path && this.path.length > 0) {
+    var creature = this.creatureSelection.creature;
+    var fromCoords = this.creatureSelection.hexCoords;
+    var toCoords = this.path[0];
+    var fromHex = this.hexGameMap.valueAt(fromCoords);
+    var toHex = this.hexGameMap.valueAt(toCoords);
+
+    toHex.creature = fromHex.creature;
+    fromHex.creature = null;
+    this.creatureSelection = {
+      creature: toHex.creature,
+      hexCoords: toCoords
+    };
+    this.resetPath();
+
+    return true;
+  } return false;
 };
 
 GameMap.prototype.getFillType = function (hex, type) {

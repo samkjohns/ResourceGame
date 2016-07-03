@@ -48,13 +48,11 @@ function breadthFirstPath(hexGrid, start, goal) {
   var startKey = JSON.stringify(start);
   var goalKey = JSON.stringify(goal);
   cameFrom[startKey] = null;
-  // console.log("starting from " + startKey);
 
   var current, currentKey;
   while(!frontier.empty()) {
     current = frontier.dequeue();
     currentKey = JSON.stringify(current);
-    // console.log("currently looking at " + currentKey);
 
     if (currentKey === goalKey) {
       return _reconstructPath(cameFrom, current);
@@ -66,7 +64,7 @@ function breadthFirstPath(hexGrid, start, goal) {
     neighbors.forEach(function (neighbor) {
       var tile = hexGrid.valueAt(neighbor);
 
-      if(!tile.occupied) {
+      if(!tile.object) {
         neighborKey = JSON.stringify(neighbor);
         if(!cameFrom[neighborKey] && cameFrom[neighborKey] !== null) {
           frontier.enqueue(neighbor);

@@ -13,9 +13,16 @@ window.DIM_Y = 800;
 var App = React.createClass({
   startGame: function () {
     this.context.fillRect(0, 0, window.DIM_X, window.DIM_Y);
-    this.map.placeObjectAt(0, 0,
-      { image: window.resourceImages.icons.settlement }
-    );
+
+    var settlement = { image: window.resourceImages.icons.settlement };
+    this.map.placeObjectAt(0, 0, settlement);
+    this.map.placeObjectAt(4, 4, settlement);
+    this.map.placeObjectAt(4, 5, settlement);
+    this.map.placeObjectAt(4, 6, settlement);
+    this.map.placeObjectAt(4, 3, settlement);
+    this.map.placeObjectAt(4, 2, settlement);
+    this.map.placeObjectAt(5, 2, settlement);
+    this.map.placeObjectAt(6, 2, settlement);
 
     this.map.placeCreatureAt(0, 1, new Creature(
       'humanoid', 'dark', {}, {},
@@ -77,10 +84,21 @@ var App = React.createClass({
     }
   },
 
+  handleKey: function (evnt) {
+    switch (evnt.key) {
+      case "m":
+        if (this.map.move()) {
+          this.map.render(this.context);
+        }
+        break;
+    }
+  },
+
   render: function () {
     return(
-      <div>
+      <div onKeyDown={this.handleKey}>
         <canvas
+          tabIndex="1"
           id="test" width={window.DIM_X} height={window.DIM_Y}
           onClick={this.handleClick}
         ></canvas>
