@@ -22,6 +22,22 @@ GameMap.prototype.placeCreatureAt = function (row, col, creature) {
   this.hexGameMap.valueAt(row, col).creature = creature;
 };
 
+GameMap.prototype.placeVisitableObjectAt = function (row, col, visitable) {
+  this.hexGameMap.valueAt(row, col).visitable = visitable;
+};
+
+GameMap.isObstacle = function (tile) {
+  var obstacles = ['creature'];
+
+  for (var i = 0; i < obstacles.length; i++) {
+    if(tile[obstacles[i]]) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 GameMap.prototype.setSelectedPathTo = function (path) {
   this.resetPath();
   if (path) {
@@ -53,17 +69,21 @@ GameMap.prototype.handleClick = function (evnt) {
   if (this.creatureSelection) {
 
     // if the click is on a selected creature, deselect
-    if (hexVal.creature === this.creatureSelection) {
+    if (
+      selection.row === this.creatureSelection.hexCoords[0] &&
+      selection.col === this.creatureSelection.hexCoords[1]
+    ) {
       this.creatureSelection = null;
       this.resetPath();
-      return false;
+      return true;
 
     // else set a path to the clicked destination
     } else {
       var path = breadthFirstPath(
         this.hexGameMap,
         this.creatureSelection.hexCoords,
-        [selection.row, selection.col]
+        [selection.row, selection.col],
+        GameMap.isObstacle
       );
 
       this.setSelectedPathTo(path);
@@ -76,7 +96,7 @@ GameMap.prototype.handleClick = function (evnt) {
       hexCoords: [selection.row, selection.col]
     }
 
-    return false;
+    return true;
   }
 };
 
@@ -117,6 +137,9 @@ GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
 
   hex.object &&
   ctx.drawImage(hex.object.image, upperLeft[0], upperLeft[1], 25, 25);
+
+  hex.visitable &&
+  ctx.drawImage(hex.visitable.image, upperLeft[0], upperLeft[1], 25, 25);
 
   hex.creature &&
   ctx.drawImage(hex.creature.image, upperLeft[0], upperLeft[1], 25, 25);

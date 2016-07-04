@@ -15,19 +15,25 @@ var App = React.createClass({
     this.context.fillRect(0, 0, window.DIM_X, window.DIM_Y);
 
     var settlement = { image: window.resourceImages.icons.settlement };
-    this.map.placeObjectAt(0, 0, settlement);
-    this.map.placeObjectAt(4, 4, settlement);
-    this.map.placeObjectAt(4, 5, settlement);
-    this.map.placeObjectAt(4, 6, settlement);
-    this.map.placeObjectAt(4, 3, settlement);
-    this.map.placeObjectAt(4, 2, settlement);
-    this.map.placeObjectAt(5, 2, settlement);
-    this.map.placeObjectAt(6, 2, settlement);
+    this.map.placeVisitableObjectAt(0, 0, settlement);
+    this.map.placeVisitableObjectAt(4, 4, settlement);
+    this.map.placeVisitableObjectAt(4, 5, settlement);
+    this.map.placeVisitableObjectAt(4, 6, settlement);
+    this.map.placeVisitableObjectAt(4, 3, settlement);
+    this.map.placeVisitableObjectAt(4, 2, settlement);
+    this.map.placeVisitableObjectAt(5, 2, settlement);
+    this.map.placeVisitableObjectAt(6, 2, settlement);
 
     this.map.placeCreatureAt(0, 1, new Creature(
       'humanoid', 'dark', {}, {},
       window.resourceImages.sprites.darkElemental
     ));
+
+    this.map.placeCreatureAt(1, 2, new Creature(
+      'humanoid', 'fire', {}, {},
+      window.resourceImages.sprites.fireElemental
+    ));
+
     this.map.render(this.context);
   },
 
