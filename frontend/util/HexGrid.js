@@ -97,12 +97,37 @@ HexGrid.prototype.northEastOf = function (row, col) {
   return this.neighborsOf(row, col).NE;
 };
 
-HexGrid.prototype.forEach = function (callback) {
-  this._grid.forEach(function (row, rowIdx) {
-    row.forEach(function (hex, colIdx) {
-      callback(hex, rowIdx, colIdx);
+HexGrid.prototype.forEach = function (callback, bounds) {
+  if (!bounds) {
+    this._grid.forEach(function (row, rowIdx) {
+      row.forEach(function (hex, colIdx) {
+        callback(hex, rowIdx, colIdx);
+      });
     });
-  });
+
+  } else {
+    var startRow = bounds.upperLeft[0];
+    var endRow = bounds.lowerRight[0];
+    var startCol = bounds.upperLeft[1];
+    var endCol = bounds.lowerRight[1];
+    // console.log(
+    // `
+    // start row: ${startRow}
+    // end row:   ${endRow}
+    //
+    // start col: ${startCol}
+    // end col:   ${endCol}
+    // `
+    // );
+
+    for (var i = startRow; i < endRow; i++) {
+      for (var j = startCol; j < endCol; j++) {
+        var hex = this._grid[i][j];
+        callback(hex, i, j);
+      }
+    }
+  }
+
 };
 
 HexGrid.verticesFor = function (
@@ -167,13 +192,14 @@ HexGrid.originOf = function (
 };
 
 HexGrid.prototype.clickedHex = function (
-  evnt, edgeLength, xOffset, yOffset
+  evnt, edgeLength, xOffset, yOffset, rowOffset, colOffset
 ) {
   var sideThree = Math.sqrt(3) * (edgeLength / 2);
   var clickedPoint = [evnt.pageX, evnt.pageY];
   var col = Math.floor(
     (evnt.pageX - xOffset) / (edgeLength * 1.5)
   );
+  col += colOffset;
 
   var row;
   if (col % 2 === 0) {
@@ -189,6 +215,9 @@ HexGrid.prototype.clickedHex = function (
     );
   }
   row = row < 0 ? 0 : row;
+  row += rowOffset;
+
+  console.log(`[r, c]: ${row}, ${col}`);
 
   return {
     hex: this._grid[row][col],

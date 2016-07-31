@@ -7,8 +7,8 @@ var React = require('react'),
 
 require('./util/PathFinder.js');
 
-window.DIM_X = 1250;
-window.DIM_Y = 800;
+window.DIM_X = 900;
+window.DIM_Y = 500;
 
 var App = React.createClass({
   startGame: function () {
@@ -34,6 +34,11 @@ var App = React.createClass({
       window.resourceImages.sprites.fireElemental
     ));
 
+    this.map.placeCreatureAt(5, 30, new Creature(
+      'humanoid', 'fire', {}, {},
+      window.resourceImages.sprites.fireElemental
+    ));
+
     this.map.render(this.context);
   },
 
@@ -41,6 +46,10 @@ var App = React.createClass({
     this.context = document.getElementById("test").getContext('2d');
     this.context.fillStyle = "rgb(255, 255, 255)";
     this.map = new GameMap();
+    window.clearCanvas = function () {
+      // console.log("clearing canvas");
+      this.context.clearRect(0, 0, window.DIM_X, window.DIM_Y);
+    }.bind(this);
     window.map = this.map;
     this.loadImages();
   },
@@ -58,12 +67,14 @@ var App = React.createClass({
           window.resourceImages[fnameImages][source] = img;
           this.loadedImages++;
 
+          this.context.fillStyle = "rgb(255, 255, 255)";
           this.context.fillRect(0, 0, window.DIM_X, window.DIM_Y);
 
-          this.context.font = '48px sans serif';
-          this.context.strokeText(
+          this.context.font = '36px verdana';
+          this.context.fillStyle = "rgb(0, 0, 0)";
+          this.context.fillText(
             this.loadedImages + " / " + this.loaderCount + " loaded",
-            window.DIM_X / 2, window.DIM_Y / 2
+            (window.DIM_X / 2) - 100, window.DIM_Y / 2
           );
 
           if (this.loadedImages == this.loaderCount) {

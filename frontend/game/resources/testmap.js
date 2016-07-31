@@ -1,8 +1,11 @@
 var HexGrid = require('../../util/HexGrid');
 
-var testMap = new HexGrid(10, 10);
-for (var i = 0; i < 10; i++) {
-  for (var j = 0; j < 10; j++) {
+const X_SIZE = 35;
+const Y_SIZE = 35;
+
+var testMap = new HexGrid(Y_SIZE, X_SIZE);
+for (var i = 0; i < Y_SIZE; i++) {
+  for (var j = 0; j < X_SIZE; j++) {
     testMap.setValue(
       [i, j],
       { type: "grass", object: null, creature: null }

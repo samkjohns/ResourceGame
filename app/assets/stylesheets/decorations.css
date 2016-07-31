@@ -1,0 +1,7 @@
+canvas {
+  border: 1px solid rgba(0, 0, 0, .5);
+}
+
+canvas:focus {
+  outline: none;
+}

@@ -19,5 +19,9 @@ var HelperUtil = module.exports = {
     Object.keys(ob2).forEach(function (key) {
       ob1[key] = ob2[key];
     });
+  },
+
+  debug_log: function (flag, message) {
+    if (flag) console.log(message);
   }
 };

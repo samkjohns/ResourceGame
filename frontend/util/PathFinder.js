@@ -41,7 +41,7 @@ LinkedListQueue.prototype.dequeue = function () {
 };
 
 // Breadth-first
-function breadthFirstPath(hexGrid, start, goal, obstacleCallback) {
+function breadthFirstPath(hexGrid, start, goal, isObstacle) {
   var frontier = new LinkedListQueue();
   frontier.enqueue(start);
   var cameFrom = {};
@@ -64,8 +64,8 @@ function breadthFirstPath(hexGrid, start, goal, obstacleCallback) {
     neighbors.forEach(function (neighbor) {
       var tile = hexGrid.valueAt(neighbor);
 
-      if(!obstacleCallback(tile)) {
-        neighborKey = JSON.stringify(neighbor);
+      var neighborKey = JSON.stringify(neighbor);
+      if(!isObstacle(tile) || neighborKey === goalKey) {
         if(!cameFrom[neighborKey] && cameFrom[neighborKey] !== null) {
           frontier.enqueue(neighbor);
           cameFrom[neighborKey] = current;

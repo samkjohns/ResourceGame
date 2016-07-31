@@ -1,10 +1,19 @@
 var testGameMap = require('./resources/testmap');
 var breadthFirstPath = require('../util/PathFinder.js');
+var debug_log = require('../util/helpers.js').debug_log;
 
 function GameMap () {
   this.hexGameMap = testGameMap;
   this.creatureSelection = null;
+  this.upper = 0;
+  this.left = 0;
+  this.lower = GameMap.DISPLAY_SIZE_Y;
+  this.right = GameMap.DISPLAY_SIZE_X;
+  console.log(`${this.hexGameMap.rows}, ${this.hexGameMap.cols}`);
 }
+
+GameMap.DISPLAY_SIZE_X = 29;
+GameMap.DISPLAY_SIZE_Y = 14;
 
 GameMap.EDGE_LENGTH = 20;
 GameMap.HALF_EDGE = 10;
@@ -27,7 +36,19 @@ GameMap.prototype.placeVisitableObjectAt = function (row, col, visitable) {
 };
 
 GameMap.isObstacle = function (tile) {
-  var obstacles = ['creature'];
+  var obstacles = ['creature', 'settlement', 'visitable'];
+
+  for (var i = 0; i < obstacles.length; i++) {
+    if(tile[obstacles[i]]) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+GameMap.isVisitable = function (tile) {
+  var visitables = ['visitable', 'settlement', 'creature'];
 
   for (var i = 0; i < obstacles.length; i++) {
     if(tile[obstacles[i]]) {
@@ -59,9 +80,10 @@ GameMap.prototype.resetPath = function () {
 
 GameMap.prototype.handleClick = function (evnt) {
   var selection = this.hexGameMap.clickedHex(
-    evnt,
-    GameMap.EDGE_LENGTH,
-    10, 10
+    evnt,                 // the click event
+    GameMap.EDGE_LENGTH,  // hex sizes
+    10, 10,               // pixel offsets
+    this.upper, this.left // row and column offsets
   );
   var hexVal = selection.hex;
   if (!hexVal) { return false; }
@@ -100,6 +122,40 @@ GameMap.prototype.handleClick = function (evnt) {
   }
 };
 
+GameMap.prototype.setNewBounds = function (coords) {
+  var n_upper = coords[0] - Math.floor(GameMap.DISPLAY_SIZE_Y / 2);
+  var n_lower = n_upper + GameMap.DISPLAY_SIZE_Y;
+  var n_left = coords[1] - Math.floor(GameMap.DISPLAY_SIZE_X / 2);
+  var n_right = n_left + GameMap.DISPLAY_SIZE_X;
+
+  var rows = this.hexGameMap.rows;
+  var cols = this.hexGameMap.cols;
+
+  if (n_upper < 0) {
+    this.upper = 0;
+    this.lower = GameMap.DISPLAY_SIZE_Y;
+
+  } else {
+    this.upper = n_upper;
+    this.lower = n_lower > rows ? rows : n_lower;
+  }
+
+  if (n_left < 0) {
+    this.left = 0;
+    this.right = GameMap.DISPLAY_SIZE_X;
+
+  } else {
+    this.left = n_left;
+    this.right = n_right > cols ? cols : n_right;
+  }
+
+  // console.log("New bounds!");
+  // console.log("Upper: " + this.upper);
+  // console.log("Lower: " + this.lower);
+  // console.log("Left: " + this.left);
+  // console.log("Right: " + this.right);
+};
+
 GameMap.prototype.move = function () {
   if (this.path && this.path.length > 0) {
     var creature = this.creatureSelection.creature;
@@ -115,6 +171,7 @@ GameMap.prototype.move = function () {
       hexCoords: toCoords
     };
     this.resetPath();
+    this.setNewBounds(toCoords);
 
     return true;
   } return false;
@@ -122,15 +179,16 @@ GameMap.prototype.move = function () {
 
 GameMap.prototype.getFillType = function (hex, type) {
   return hex.inPath ? "rgba(255, 0, 0, .5)" : GameMap.colors[hex.type];
+  // if (hex.inPath) return "rgba(255, 0, 0, .5)";
 };
 
 GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
   var nwX, nwY;
-  nwX = (colIdx * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 8;
+  nwX = ((colIdx - this.left) * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 8;
   if (colIdx % 2 === 0) {
-    nwY = (rowIdx * GameMap.SIDE_THREE * 2) + 14;
+    nwY = ((rowIdx - this.upper) * GameMap.SIDE_THREE * 2) + 14;
   } else {
-    nwY = (rowIdx * GameMap.SIDE_THREE * 2) + 12 + GameMap.EDGE_LENGTH;
+    nwY = ((rowIdx - this.upper) * GameMap.SIDE_THREE * 2) + 12 + GameMap.EDGE_LENGTH;
   }
 
   var upperLeft = [nwX + GameMap.HALF_EDGE, nwY];
@@ -145,136 +203,167 @@ GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
   ctx.drawImage(hex.creature.image, upperLeft[0], upperLeft[1], 25, 25);
 };
 
+function moveTo(ctx, point) {
+  ctx.moveTo(point[0], point[1]);
+}
+
+function lineTo(ctx, drawnLines, from, to) {
+  var lineJSON = JSON.stringify({
+    from: from,
+    to: to
+  });
+
+  if (!drawnLines[lineJSON]) {
+    ctx.lineTo(to.point[0], to.point[1]);
+    drawnLines[lineJSON] = true;
+  }
+}
+
+function drawHex (
+  map,
+  ctx, west, hex,
+  row, col, maxRow, maxCol,
+  drawnLines, drawnHexes
+) {
+  var startX = west[0];
+  var startY = west[1];
+
+  var debug = map.upper === 1 && row < 5 && col === 0;
+
+  var vertices = {
+    W: west,
+
+    NW: [
+      startX + GameMap.HALF_EDGE,
+      startY - GameMap.SIDE_THREE
+    ],
+
+    NE: [
+      startX + (GameMap.HALF_EDGE + GameMap.EDGE_LENGTH),
+      startY - GameMap.SIDE_THREE
+    ],
+
+    E: [
+      startX + (2 * GameMap.EDGE_LENGTH),
+      startY
+    ],
+
+    SW: [
+      startX + GameMap.HALF_EDGE,
+      startY + GameMap.SIDE_THREE
+    ],
+
+    SE: [
+      startX + GameMap.HALF_EDGE + GameMap.EDGE_LENGTH,
+      startY + GameMap.SIDE_THREE
+    ],
+  };
+
+  var hexJSON = JSON.stringify(vertices);
+  if (!drawnHexes[hexJSON]) {
+    ctx.beginPath();
+
+    moveTo(ctx, west);
+    lineTo(
+      ctx, drawnLines,
+      {loc: 'W', point: west},
+      {loc: 'NW', point: vertices.NW}
+    );
+    lineTo(
+      ctx, drawnLines,
+      {loc: 'NW', point: vertices.NW},
+      {loc: 'NE', point: vertices.NE}
+    );
+    lineTo(
+      ctx, drawnLines,
+      {loc: 'NE', point: vertices.NE},
+      {loc: 'E', point: vertices.E}
+    );
+    lineTo(
+      ctx, drawnLines,
+      {loc: 'E', point: vertices.E},
+      {loc: 'SE', point: vertices.SE}
+    );
+    lineTo(
+      ctx, drawnLines,
+      {loc: 'SE', point: vertices.SE},
+      {loc: 'SW', point: vertices.SW}
+    );
+    lineTo(
+      ctx, drawnLines,
+      {loc: 'SW', point: vertices.SW},
+      {loc: 'W', point: vertices.W}
+    );
+
+    // ctx.strokeStyle = "rgba(0, 0, 0, .4)";
+    // ctx.stroke();
+
+    // establish a gradient for testing
+    // if (debug) debugger;
+    if (hex.inPath) {
+      ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+
+    } else {
+      var opacity = (row / maxRow);
+      var blue = Math.floor(255 * (col / maxCol));
+      var color = `rgba(114, 220, ${blue}, ${opacity})`;
+      ctx.fillStyle = color;
+    }
+    // ctx.strokeStyle = ctx.fillStyle;
+    // ctx.stroke();
+    // ctx.fillStyle = map.getFillType(hex);
+    ctx.fill();
+
+    drawnHexes[hexJSON] = true;
+  }
+
+  return vertices;
+}
+
 GameMap.prototype.render = function (ctx) {
+  window.clearCanvas();
+
   var drawnLines = {};
   var drawnHexes = {};
   var self = this;
 
-  function drawHex (west, hex) {
-    var startX = west[0];
-    var startY = west[1];
-    var vertices = {
-      W: west,
-
-      NW: [
-        startX + GameMap.HALF_EDGE,
-        startY - GameMap.SIDE_THREE
-      ],
-
-      NE: [
-        startX + (GameMap.HALF_EDGE + GameMap.EDGE_LENGTH),
-        startY - GameMap.SIDE_THREE
-      ],
-
-      E: [
-        startX + (2 * GameMap.EDGE_LENGTH),
-        startY
-      ],
-
-      SW: [
-        startX + GameMap.HALF_EDGE,
-        startY + GameMap.SIDE_THREE
-      ],
-
-      SE: [
-        startX + GameMap.HALF_EDGE + GameMap.EDGE_LENGTH,
-        startY + GameMap.SIDE_THREE
-      ],
-    };
-
-    var hexJSON = JSON.stringify(vertices);
-    if (!drawnHexes[hexJSON]) {
-
-      function moveTo(ctx, point) { ctx.moveTo(point[0], point[1]); }
-      function lineTo(ctx, from, to) {
-        var lineJSON = JSON.stringify({
-          from: from,
-          to: to
-        });
-
-        if (!drawnLines[lineJSON]) {
-          ctx.lineTo(to.point[0], to.point[1]);
-          drawnLines[lineJSON] = true;
-        }
-      }
-
-      ctx.beginPath();
-
-      moveTo(ctx, west);
-      lineTo(
-        ctx,
-        {loc: 'W', point: west},
-        {loc: 'NW', point: vertices.NW}
-      );
-      lineTo(
-        ctx,
-        {loc: 'NW', point: vertices.NW},
-        {loc: 'NE', point: vertices.NE}
-      );
-      lineTo(
-        ctx,
-        {loc: 'NE', point: vertices.NE},
-        {loc: 'E', point: vertices.E}
-      );
-      lineTo(
-        ctx,
-        {loc: 'E', point: vertices.E},
-        {loc: 'SE', point: vertices.SE}
-      );
-      lineTo(
-        ctx,
-        {loc: 'SE', point: vertices.SE},
-        {loc: 'SW', point: vertices.SW}
-      );
-      lineTo(
-        ctx,
-        {loc: 'SW', point: vertices.SW},
-        {loc: 'W', point: vertices.W}
-      );
-
-      ctx.strokeStyle = "rgba(0, 0, 0, .4)";
-      ctx.stroke();
-
-      ctx.fillStyle = self.getFillType(hex);
-      // ctx.fillStyle = GameMap.colors[hex.type];
-      ctx.fill();
-
-      drawnHexes[hexJSON] = true;
-    }
-
-    return vertices;
-  }
-
   var vertices;
   var currentWest = [10, 10 + GameMap.SIDE_THREE];
 
-  ctx.fillStyle = 'rgb(255, 255, 255)';
-  ctx.fillRect(0, 0, window.DIM_X, window.DIM_Y)
+  window._count = 0;
+  self.hexGameMap.forEach(
+    function (hex, rowIdx, colIdx) {
+      // first draw tiles
+      vertices = drawHex(
+        map,
+        ctx, currentWest, hex,
+        rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
+        drawnLines, drawnHexes
+      );
 
-  // first draw tiles
-  this.hexGameMap.forEach(function (hex, rowIdx, colIdx) {
-    vertices = drawHex(currentWest, hex);
+      // then draw objects
+      self.renderObjects(ctx, hex, rowIdx, colIdx);
 
-    if (colIdx === this.hexGameMap.cols - 1) {
-      currentWest = [
-        10,
-        10 + GameMap.SIDE_THREE + ((rowIdx + 1) * GameMap.SIDE_THREE * 2)
-      ];
+      if (colIdx === self.right - 1) {
+        currentWest = [
+          10,
+          10 + GameMap.SIDE_THREE + ((rowIdx - self.upper + 1) * GameMap.SIDE_THREE * 2)
+        ];
 
-    } else if (colIdx % 2 === 0) {
-      currentWest = vertices.SE;
+      } else if (colIdx % 2 === 0) {
+        currentWest = vertices.SE;
 
-    } else {
-      currentWest = vertices.NE;
+      } else {
+        currentWest = vertices.NE;
+      }
+
+    },
+
+    {
+      upperLeft: [self.upper, self.left],
+      lowerRight: [self.lower, self.right]
     }
-
-  }.bind(this));
-
-  var west = [10, 10 + GameMap.SIDE_THREE];
-  // then draw objects
-  this.hexGameMap.forEach(function (hex, rowIdx, colIdx) {
-    this.renderObjects(ctx, hex, rowIdx, colIdx);
-  }.bind(this));
+  );
 };
 
 // window.findPath = require('../util/helpers').findPath;
