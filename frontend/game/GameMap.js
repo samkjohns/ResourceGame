@@ -78,6 +78,22 @@ GameMap.prototype.resetPath = function () {
   this.path = [];
 };
 
+GameMap.prototype.handleHover = function (evnt) {
+  var selection = this.hexGameMap.clickedHex(
+    evnt,                 // the click event
+    GameMap.EDGE_LENGTH,  // hex sizes
+    10, 10,               // pixel offsets
+    this.upper, this.left // row and column offsets
+  );
+
+  if (!this.hoverSelection ||
+      selection.row !== this.hoverSelection.row ||
+      selection.col !== this.hoverSelection.col) {
+    this.hoverSelection = selection;
+    console.log(`${selection.row}, ${selection.col}`);
+  }
+};
+
 GameMap.prototype.handleClick = function (evnt) {
   var selection = this.hexGameMap.clickedHex(
     evnt,                 // the click event

@@ -101,6 +101,10 @@ var App = React.createClass({
     }
   },
 
+  handleHover: function (evnt) {
+    this.map.handleHover(evnt);
+  },
+
   handleKey: function (evnt) {
     switch (evnt.key) {
       case "m":
@@ -118,6 +122,7 @@ var App = React.createClass({
           tabIndex="1"
           id="test" width={window.DIM_X} height={window.DIM_Y}
           onClick={this.handleClick}
+          onMouseMove={this.handleHover}
         ></canvas>
       </div>
     );

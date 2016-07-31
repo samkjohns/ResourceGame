@@ -110,15 +110,6 @@ HexGrid.prototype.forEach = function (callback, bounds) {
     var endRow = bounds.lowerRight[0];
     var startCol = bounds.upperLeft[1];
     var endCol = bounds.lowerRight[1];
-    // console.log(
-    // `
-    // start row: ${startRow}
-    // end row:   ${endRow}
-    //
-    // start col: ${startCol}
-    // end col:   ${endCol}
-    // `
-    // );
 
     for (var i = startRow; i < endRow; i++) {
       for (var j = startCol; j < endCol; j++) {
@@ -194,15 +185,15 @@ HexGrid.originOf = function (
 HexGrid.prototype.clickedHex = function (
   evnt, edgeLength, xOffset, yOffset, rowOffset, colOffset
 ) {
-  var sideThree = Math.sqrt(3) * (edgeLength / 2);
-  var clickedPoint = [evnt.pageX, evnt.pageY];
+  var halfEdge = edgeLength / 2;
+  var sideThree = Math.sqrt(3) * halfEdge;
   var col = Math.floor(
     (evnt.pageX - xOffset) / (edgeLength * 1.5)
   );
   col += colOffset;
 
   var row;
-  if (col % 2 === 0) {
+  if (col % 2 === colOffset % 2) {
     row = Math.floor(
       (evnt.pageY - yOffset - (2 * sideThree)) /
       (2 * sideThree)
@@ -213,11 +204,14 @@ HexGrid.prototype.clickedHex = function (
       (evnt.pageY - yOffset - sideThree) /
       (2 * sideThree)
     );
+    row += colOffset % 2;
+
   }
+
   row = row < 0 ? 0 : row;
   row += rowOffset;
 
-  console.log(`[r, c]: ${row}, ${col}`);
+  // console.log(`[r, c]: ${row}, ${col}`);
 
   return {
     hex: this._grid[row][col],
