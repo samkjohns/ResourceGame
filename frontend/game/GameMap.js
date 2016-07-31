@@ -184,12 +184,9 @@ GameMap.prototype.getFillType = function (hex, type) {
 
 GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
   var nwX, nwY;
-  nwX = ((colIdx - this.left) * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 8;
-  if (colIdx % 2 === 0) {
-    nwY = ((rowIdx - this.upper) * GameMap.SIDE_THREE * 2) + 14;
-  } else {
-    nwY = ((rowIdx - this.upper) * GameMap.SIDE_THREE * 2) + 12 + GameMap.EDGE_LENGTH;
-  }
+  nwX = ((colIdx - this.left) * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 10;
+  nwY = ((rowIdx - this.upper) * GameMap.SIDE_THREE * 2) + 10
+  if (this.left % 2 !== colIdx % 2) nwY += GameMap.EDGE_LENGTH;
 
   var upperLeft = [nwX + GameMap.HALF_EDGE, nwY];
 
@@ -302,15 +299,17 @@ function drawHex (
     // if (debug) debugger;
     if (hex.inPath) {
       ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+      ctx.strokeStyle = ctx.fillStyle;
 
     } else {
       var opacity = (row / maxRow);
       var blue = Math.floor(255 * (col / maxCol));
       var color = `rgba(114, 220, ${blue}, ${opacity})`;
+      var stroke = `rgba(114, 220, ${blue}, 1)`
       ctx.fillStyle = color;
+      ctx.strokeStyle = stroke;
     }
-    // ctx.strokeStyle = ctx.fillStyle;
-    // ctx.stroke();
+    ctx.stroke();
     // ctx.fillStyle = map.getFillType(hex);
     ctx.fill();
 
@@ -330,7 +329,12 @@ GameMap.prototype.render = function (ctx) {
   var vertices;
   var currentWest = [10, 10 + GameMap.SIDE_THREE];
 
-  window._count = 0;
+  console.log(
+  `
+row: ${this.upper} -> ${this.lower}
+col: ${this.left} -> ${this.right}
+  `
+  );
   self.hexGameMap.forEach(
     function (hex, rowIdx, colIdx) {
       // first draw tiles
