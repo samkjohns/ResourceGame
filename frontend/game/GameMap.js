@@ -165,32 +165,69 @@ GameMap.prototype.setNewBounds = function (coords) {
     this.left = n_left;
     this.right = n_right > cols ? cols : n_right;
   }
-
-  // console.log("New bounds!");
-  // console.log("Upper: " + this.upper);
-  // console.log("Lower: " + this.lower);
-  // console.log("Left: " + this.left);
-  // console.log("Right: " + this.right);
 };
 
-GameMap.prototype.move = function () {
+GameMap.prototype.discover = function (row, col) {
+  this.hexGameMap.valueAt(row, col).discovered = true;
+  var neighbors = this.hexGameMap.neighborsOf(row, col);
+
+  Object.keys(neighbors).forEach(function (dir) {
+    var neighbor = neighbors[dir];
+    neighbor.discovered = true;
+  });
+};
+
+GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
+  var self = this;
+  var creature = this.creatureSelection.creature;
+
+  var fromCoords = this.creatureSelection.hexCoords;
+  console.log(fromCoords);
+  var fromHex = this.hexGameMap.valueAt(fromCoords);
+
+  var toCoords = this.path[pathIdx];
+  console.log(toCoords);
+  var toHex = this.hexGameMap.valueAt(toCoords);
+  // console.log(`from: ${fromCoords[0]}, ${fromCoords[1]}`);
+  // console.log(`to: ${toCoords[0]}, ${toCoords[1]}`);
+
+  window.setTimeout(
+    function () {
+      toHex.creature = fromHex.creature;
+      fromHex.creature = null;
+      self.creatureSelection = {
+        creature: toHex.creature,
+        hexCoords: toCoords
+      };
+
+      self.discover(toCoords[0], toCoords[1]);
+
+      if (pathIdx === 0) {
+        self.resetPath();
+        rerender();
+        success && success(self, pathIdx, rerender);
+
+      } else  {
+        rerender();
+        self.animateAlong(pathIdx - 1, rerender, success);
+      }
+    },
+    300
+  );
+};
+
+GameMap.prototype.move = function (rerender) {
   if (this.path && this.path.length > 0) {
-    var creature = this.creatureSelection.creature;
-    var fromCoords = this.creatureSelection.hexCoords;
-    var toCoords = this.path[0];
-    var fromHex = this.hexGameMap.valueAt(fromCoords);
-    var toHex = this.hexGameMap.valueAt(toCoords);
-
-    toHex.creature = fromHex.creature;
-    fromHex.creature = null;
-    this.creatureSelection = {
-      creature: toHex.creature,
-      hexCoords: toCoords
-    };
-    this.resetPath();
-    this.setNewBounds(toCoords);
-
+    console.log(`Path:`);
+    console.log(this.path[0]);
+    console.log(this.path[this.path.length - 1]);
+    console.log('...');
+    this.animating = true;
+    this.animateAlong(this.path.length - 2, rerender, function () {
+      this.animating = false;
+    }.bind(this));
     return true;
+
   } return false;
 };
 
@@ -200,6 +237,8 @@ GameMap.prototype.getFillType = function (hex, type) {
 };
 
 GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
+  if (!hex.discovered) return;
+
   var nwX, nwY;
   nwX = ((colIdx - this.left) * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 10;
   nwY = ((rowIdx - this.upper) * GameMap.SIDE_THREE * 2) + 10
@@ -217,95 +256,6 @@ GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
   ctx.drawImage(hex.creature.image, upperLeft[0], upperLeft[1], 25, 25);
 };
 
-function moveTo(ctx, point) {
-  ctx.moveTo(point[0], point[1]);
-}
-
-function lineTo(ctx, drawnLines, from, to) {
-  var lineJSON = JSON.stringify({
-    from: from,
-    to: to
-  });
-
-  if (!drawnLines[lineJSON]) {
-    ctx.lineTo(to.point[0], to.point[1]);
-    drawnLines[lineJSON] = true;
-  }
-}
-
-// function drawHex (
-//   ctx, west, hex,
-//   row, col, maxRow, maxCol,
-//   drawnLines, drawnHexes
-// ) {
-//   var startX = west[0];
-//   var startY = west[1];
-//
-//   var vertices = HexUtil.verticesFor(west, GameMap.EDGE_LENGTH);
-//
-//   var hexJSON = JSON.stringify(vertices);
-//   if (!drawnHexes[hexJSON]) {
-//     ctx.beginPath();
-//
-//     moveTo(ctx, west);
-//     lineTo(
-//       ctx, drawnLines,
-//       {loc: 'W', point: west},
-//       {loc: 'NW', point: vertices.NW}
-//     );
-//     lineTo(
-//       ctx, drawnLines,
-//       {loc: 'NW', point: vertices.NW},
-//       {loc: 'NE', point: vertices.NE}
-//     );
-//     lineTo(
-//       ctx, drawnLines,
-//       {loc: 'NE', point: vertices.NE},
-//       {loc: 'E', point: vertices.E}
-//     );
-//     lineTo(
-//       ctx, drawnLines,
-//       {loc: 'E', point: vertices.E},
-//       {loc: 'SE', point: vertices.SE}
-//     );
-//     lineTo(
-//       ctx, drawnLines,
-//       {loc: 'SE', point: vertices.SE},
-//       {loc: 'SW', point: vertices.SW}
-//     );
-//     lineTo(
-//       ctx, drawnLines,
-//       {loc: 'SW', point: vertices.SW},
-//       {loc: 'W', point: vertices.W}
-//     );
-//
-//     // ctx.strokeStyle = "rgba(0, 0, 0, .4)";
-//     // ctx.stroke();
-//
-//     // establish a gradient for testing
-//     // if (debug) debugger;
-//     if (hex.inPath) {
-//       ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-//       ctx.strokeStyle = ctx.fillStyle;
-//
-//     } else {
-//       var opacity = (row / maxRow);
-//       var blue = Math.floor(255 * (col / maxCol));
-//       var color = `rgba(114, 220, ${blue}, ${opacity})`;
-//       var stroke = `rgba(114, 220, ${blue}, 1)`
-//       ctx.fillStyle = color;
-//       ctx.strokeStyle = stroke;
-//     }
-//     ctx.stroke();
-//     // ctx.fillStyle = map.getFillType(hex);
-//     ctx.fill();
-//
-//     drawnHexes[hexJSON] = true;
-//   }
-//
-//   return vertices;
-// }
-
 GameMap.prototype.render = function (ctx) {
   window.clearCanvas();
 
@@ -319,28 +269,41 @@ GameMap.prototype.render = function (ctx) {
   self.hexGameMap.forEach(
     function (hex, rowIdx, colIdx) {
       // first draw tiles
-      vertices = drawHex(
-        ctx, currentWest, hex,
+      vertices = HexUtil.drawHex(
+        ctx, currentWest, hex, GameMap.EDGE_LENGTH,
         rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
-        drawnLines, drawnHexes
+        drawnLines, drawnHexes,
+        function (ctx, hex, row, col, maxRow, maxCol) {
+
+          if (hex.discovered) {
+            if (hex.inPath && !self.animating) {
+              ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+              ctx.strokeStyle = ctx.fillStyle;
+
+            } else {
+              var opacity = (row / maxRow);
+              var blue = Math.floor(255 * (col / maxCol));
+              var color = `rgba(114, 220, ${blue}, ${opacity})`;
+              var stroke = `rgba(114, 220, ${blue}, 1)`;
+              ctx.fillStyle = color;
+              ctx.strokeStyle = stroke;
+            }
+
+          } else {
+            ctx.fillStyle = 'black';
+            ctx.strokeStyle = 'black';
+          }
+        }
       );
 
       // then draw objects
       self.renderObjects(ctx, hex, rowIdx, colIdx);
 
-      if (colIdx === self.right - 1) {
-        currentWest = [
-          10,
-          10 + GameMap.SIDE_THREE + ((rowIdx - self.upper + 1) * GameMap.SIDE_THREE * 2)
-        ];
-
-      } else if (colIdx % 2 === 0) {
-        currentWest = vertices.SE;
-
-      } else {
-        currentWest = vertices.NE;
-      }
-
+      currentWest = HexUtil.nextWest(
+        currentWest, rowIdx, colIdx,
+        self.upper, self.right,
+        10, 10, GameMap.SIDE_THREE, vertices
+      );
     },
 
     {

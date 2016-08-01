@@ -72,6 +72,23 @@ var HexUtil = {
     return vertices;
   },
 
+  nextWest: function (
+    current, row, col, upperRow, lastCol, startX, startY, sideThree, vertices
+  ) {
+    if (col === lastCol - 1) {
+      return [
+        startX,
+        startY + sideThree + ((row - upperRow + 1) * sideThree * 2)
+      ];
+
+    } else if (col % 2 === 0) {
+      return vertices.SE;
+
+    } else {
+      return vertices.NE;
+    }
+  },
+
   verticesFor: function (west, edgeLength) {
     var halfEdge = edgeLength / 2;
     var sideThree = Math.sqrt(3) * halfEdge;

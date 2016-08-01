@@ -23,5 +23,10 @@ var HelperUtil = module.exports = {
 
   debug_log: function (flag, message) {
     if (flag) console.log(message);
+  },
+
+  // min is inclusive, max is exclusive
+  between: function (val, min, max) {
+    return val >= min && val < max;
   }
 };

@@ -57,8 +57,10 @@ HexGrid.prototype.neighborsOf = function (row, col) {
 
   var coords = col % 2 === 0 ? _evenNeighborCoords : _oddNeighborCoords;
   Object.keys(coords).forEach(function (key) {
-    var gridCoords = HexGrid.addPoints([row, col], _neighborCoords[key]);
-    neighbors[key] = this.valueAt(gridCoords);
+    var gridCoords = HexGrid.addPoints([row, col], coords[key]);
+    if (this.inBounds(gridCoords[0], gridCoords[1])) {
+      neighbors[key] = this.valueAt(gridCoords);
+    }
   }.bind(this));
 
   return neighbors;

@@ -1,5 +1,6 @@
 var Dimensions = require('../constants/dimensions.js'),
     GameMap = require('./GameMap.js'),
+    helpers = require('../util/helpers.js'),
     HexUtil = require('../util/HexUtil.js');
 
 NavMap.DIM_UPPER = 10;
@@ -18,8 +19,24 @@ function NavMap(hexMap) {
   this.EDGE_LENGTH = this.HALF_EDGE * 2;
 }
 
-NavMap.prototype.handleClick = function (evnt) {
+NavMap.prototype.inBounds = function (x, y) {
+  return helpers.between(y, NavMap.DIM_UPPER, NavMap.DIM_LOWER) &&
+         helpers.between(x, NavMap.DIM_LEFT,  NavMap.DIM_RIGHT);
+};
 
+NavMap.prototype.handleClick = function (evnt, gameMap) {
+  if (this.inBounds(evnt.pageX, evnt.pageY)) {
+    var selection = this.hexGameMap.clickedHex(
+      evnt, this.EDGE_LENGTH,
+      NavMap.DIM_LEFT, NavMap.DIM_UPPER, 0, 0
+    );
+
+    gameMap.setNewBounds([selection.row, selection.col])
+
+    return true;
+  }
+
+  return false;
 };
 
 NavMap.clear = function (ctx) {
@@ -45,33 +62,33 @@ NavMap.prototype.render = function (ctx) {
         rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
         drawnLines, drawnHexes,
         function (ctx, hex, row, col, maxRow, maxCol) {
-          if (hex.inPath) {
-            ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-            ctx.strokeStyle = ctx.fillStyle;
+          if (hex.discovered) {
+            if (hex.inPath) {
+              ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+              ctx.strokeStyle = ctx.fillStyle;
+
+            } else {
+              var opacity = (row / maxRow);
+              var blue = Math.floor(255 * (col / maxCol));
+              var color = `rgba(114, 220, ${blue}, ${opacity})`;
+              var stroke = `rgba(114, 220, ${blue}, 1)`;
+              ctx.fillStyle = color;
+              ctx.strokeStyle = stroke;
+            }
 
           } else {
-            var opacity = (row / maxRow);
-            var blue = Math.floor(255 * (col / maxCol));
-            var color = `rgba(114, 220, ${blue}, ${opacity})`;
-            var stroke = `rgba(114, 220, ${blue}, 0)`;
-            ctx.fillStyle = color;
-            ctx.strokeStyle = stroke;
+            ctx.fillStyle = 'black';
+            ctx.strokeStyle = 'black';
           }
         }
       );
 
-      if (colIdx === self.hexGameMap.cols - 1) {
-        currentWest = [
-          NavMap.DIM_LEFT,
-          NavMap.DIM_UPPER + self.SIDE_THREE + ((rowIdx + 1) * self.SIDE_THREE * 2)
-        ];
-
-      } else if (colIdx % 2 === 0) {
-        currentWest = vertices.SE;
-
-      } else {
-        currentWest = vertices.NE;
-      }
+      currentWest = HexUtil.nextWest(
+        currentWest, rowIdx, colIdx,
+        0, self.hexGameMap.cols,
+        NavMap.DIM_LEFT, NavMap.DIM_UPPER,
+        self.SIDE_THREE, vertices
+      );
 
     }
   );

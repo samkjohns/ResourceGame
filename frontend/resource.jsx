@@ -25,6 +25,7 @@ var App = React.createClass({
       'humanoid', 'dark', {}, {},
       window.resourceImages.sprites.darkElemental
     ));
+    this.map.discover(0, 1);
 
     this.map.placeCreatureAt(1, 2, new Creature(
       'humanoid', 'fire', {}, {},
@@ -36,8 +37,7 @@ var App = React.createClass({
       window.resourceImages.sprites.fireElemental
     ));
 
-    this.map.render(this.context);
-    this.nav.render(this.context);
+    this.canvasRender();
   },
 
   componentDidMount: function () {
@@ -96,10 +96,9 @@ var App = React.createClass({
   },
 
   handleClick: function (evnt) {
-    if (this.nav.handleClick(evnt) || this.map.handleClick(evnt)) {
+    if (this.nav.handleClick(evnt, this.map) || this.map.handleClick(evnt)) {
       // for now just rerender the map, but we can do better
-      this.map.render(this.context);
-      this.nav.render(this.context);
+      this.canvasRender();
     }
   },
 
@@ -111,12 +110,15 @@ var App = React.createClass({
   handleKey: function (evnt) {
     switch (evnt.key) {
       case "m":
-        if (this.map.move()) {
-          this.map.render(this.context);
-          this.nav.render(this.context);
-        }
+        this.map.move(this.canvasRender);
         break;
     }
+  },
+
+  canvasRender: function () {
+    console.log('rerender');
+    this.map.render(this.context);
+    this.nav.render(this.context);
   },
 
   render: function () {
