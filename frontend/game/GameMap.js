@@ -1,5 +1,6 @@
 var testGameMap = require('./resources/testmap');
 var breadthFirstPath = require('../util/PathFinder.js');
+var HexUtil = require('../util/HexUtil.js');
 var debug_log = require('../util/helpers.js').debug_log;
 
 function GameMap () {
@@ -232,108 +233,78 @@ function lineTo(ctx, drawnLines, from, to) {
   }
 }
 
-function drawHex (
-  map,
-  ctx, west, hex,
-  row, col, maxRow, maxCol,
-  drawnLines, drawnHexes
-) {
-  var startX = west[0];
-  var startY = west[1];
-
-  var debug = map.upper === 1 && row < 5 && col === 0;
-
-  var vertices = {
-    W: west,
-
-    NW: [
-      startX + GameMap.HALF_EDGE,
-      startY - GameMap.SIDE_THREE
-    ],
-
-    NE: [
-      startX + (GameMap.HALF_EDGE + GameMap.EDGE_LENGTH),
-      startY - GameMap.SIDE_THREE
-    ],
-
-    E: [
-      startX + (2 * GameMap.EDGE_LENGTH),
-      startY
-    ],
-
-    SW: [
-      startX + GameMap.HALF_EDGE,
-      startY + GameMap.SIDE_THREE
-    ],
-
-    SE: [
-      startX + GameMap.HALF_EDGE + GameMap.EDGE_LENGTH,
-      startY + GameMap.SIDE_THREE
-    ],
-  };
-
-  var hexJSON = JSON.stringify(vertices);
-  if (!drawnHexes[hexJSON]) {
-    ctx.beginPath();
-
-    moveTo(ctx, west);
-    lineTo(
-      ctx, drawnLines,
-      {loc: 'W', point: west},
-      {loc: 'NW', point: vertices.NW}
-    );
-    lineTo(
-      ctx, drawnLines,
-      {loc: 'NW', point: vertices.NW},
-      {loc: 'NE', point: vertices.NE}
-    );
-    lineTo(
-      ctx, drawnLines,
-      {loc: 'NE', point: vertices.NE},
-      {loc: 'E', point: vertices.E}
-    );
-    lineTo(
-      ctx, drawnLines,
-      {loc: 'E', point: vertices.E},
-      {loc: 'SE', point: vertices.SE}
-    );
-    lineTo(
-      ctx, drawnLines,
-      {loc: 'SE', point: vertices.SE},
-      {loc: 'SW', point: vertices.SW}
-    );
-    lineTo(
-      ctx, drawnLines,
-      {loc: 'SW', point: vertices.SW},
-      {loc: 'W', point: vertices.W}
-    );
-
-    // ctx.strokeStyle = "rgba(0, 0, 0, .4)";
-    // ctx.stroke();
-
-    // establish a gradient for testing
-    // if (debug) debugger;
-    if (hex.inPath) {
-      ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-      ctx.strokeStyle = ctx.fillStyle;
-
-    } else {
-      var opacity = (row / maxRow);
-      var blue = Math.floor(255 * (col / maxCol));
-      var color = `rgba(114, 220, ${blue}, ${opacity})`;
-      var stroke = `rgba(114, 220, ${blue}, 1)`
-      ctx.fillStyle = color;
-      ctx.strokeStyle = stroke;
-    }
-    ctx.stroke();
-    // ctx.fillStyle = map.getFillType(hex);
-    ctx.fill();
-
-    drawnHexes[hexJSON] = true;
-  }
-
-  return vertices;
-}
+// function drawHex (
+//   ctx, west, hex,
+//   row, col, maxRow, maxCol,
+//   drawnLines, drawnHexes
+// ) {
+//   var startX = west[0];
+//   var startY = west[1];
+//
+//   var vertices = HexUtil.verticesFor(west, GameMap.EDGE_LENGTH);
+//
+//   var hexJSON = JSON.stringify(vertices);
+//   if (!drawnHexes[hexJSON]) {
+//     ctx.beginPath();
+//
+//     moveTo(ctx, west);
+//     lineTo(
+//       ctx, drawnLines,
+//       {loc: 'W', point: west},
+//       {loc: 'NW', point: vertices.NW}
+//     );
+//     lineTo(
+//       ctx, drawnLines,
+//       {loc: 'NW', point: vertices.NW},
+//       {loc: 'NE', point: vertices.NE}
+//     );
+//     lineTo(
+//       ctx, drawnLines,
+//       {loc: 'NE', point: vertices.NE},
+//       {loc: 'E', point: vertices.E}
+//     );
+//     lineTo(
+//       ctx, drawnLines,
+//       {loc: 'E', point: vertices.E},
+//       {loc: 'SE', point: vertices.SE}
+//     );
+//     lineTo(
+//       ctx, drawnLines,
+//       {loc: 'SE', point: vertices.SE},
+//       {loc: 'SW', point: vertices.SW}
+//     );
+//     lineTo(
+//       ctx, drawnLines,
+//       {loc: 'SW', point: vertices.SW},
+//       {loc: 'W', point: vertices.W}
+//     );
+//
+//     // ctx.strokeStyle = "rgba(0, 0, 0, .4)";
+//     // ctx.stroke();
+//
+//     // establish a gradient for testing
+//     // if (debug) debugger;
+//     if (hex.inPath) {
+//       ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+//       ctx.strokeStyle = ctx.fillStyle;
+//
+//     } else {
+//       var opacity = (row / maxRow);
+//       var blue = Math.floor(255 * (col / maxCol));
+//       var color = `rgba(114, 220, ${blue}, ${opacity})`;
+//       var stroke = `rgba(114, 220, ${blue}, 1)`
+//       ctx.fillStyle = color;
+//       ctx.strokeStyle = stroke;
+//     }
+//     ctx.stroke();
+//     // ctx.fillStyle = map.getFillType(hex);
+//     ctx.fill();
+//
+//     drawnHexes[hexJSON] = true;
+//   }
+//
+//   return vertices;
+// }
 
 GameMap.prototype.render = function (ctx) {
   window.clearCanvas();
@@ -345,17 +316,10 @@ GameMap.prototype.render = function (ctx) {
   var vertices;
   var currentWest = [10, 10 + GameMap.SIDE_THREE];
 
-  console.log(
-  `
-row: ${this.upper} -> ${this.lower}
-col: ${this.left} -> ${this.right}
-  `
-  );
   self.hexGameMap.forEach(
     function (hex, rowIdx, colIdx) {
       // first draw tiles
       vertices = drawHex(
-        map,
         ctx, currentWest, hex,
         rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
         drawnLines, drawnHexes

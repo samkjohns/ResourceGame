@@ -1,18 +1,15 @@
 var React = require('react'),
     ReactDOM = require('react-dom'),
+    Dimensions = require('./constants/dimensions.js'),
     Creature = require('./game/Creature'),
     Move = require('./game/Move'),
     Battlefield = require('./game/Battlefield'),
+    NavMap = require('./game/NavMap'),
     GameMap = require('./game/GameMap');
-
-require('./util/PathFinder.js');
-
-window.DIM_X = 900;
-window.DIM_Y = 500;
 
 var App = React.createClass({
   startGame: function () {
-    this.context.fillRect(0, 0, window.DIM_X, window.DIM_Y);
+    this.context.fillRect(0, 0, Dimensions.DIM_X, Dimensions.DIM_Y);
 
     var settlement = { image: window.resourceImages.icons.settlement };
     this.map.placeVisitableObjectAt(0, 0, settlement);
@@ -40,6 +37,7 @@ var App = React.createClass({
     ));
 
     this.map.render(this.context);
+    this.nav.render(this.context);
   },
 
   componentDidMount: function () {
@@ -47,10 +45,13 @@ var App = React.createClass({
     this.context.fillStyle = "rgb(255, 255, 255)";
     this.map = new GameMap();
     window.clearCanvas = function () {
-      // console.log("clearing canvas");
-      this.context.clearRect(0, 0, window.DIM_X, window.DIM_Y);
+      this.context.clearRect(0, 0, Dimensions.DIM_X, Dimensions.DIM_Y);
     }.bind(this);
     window.map = this.map;
+
+    this.nav = new NavMap(this.map.hexGameMap);
+    window.nav = this.nav;
+
     this.loadImages();
   },
 
@@ -68,13 +69,13 @@ var App = React.createClass({
           this.loadedImages++;
 
           this.context.fillStyle = "rgb(255, 255, 255)";
-          this.context.fillRect(0, 0, window.DIM_X, window.DIM_Y);
+          this.context.fillRect(0, 0, Dimensions.DIM_X, Dimensions.DIM_Y);
 
           this.context.font = '36px verdana';
           this.context.fillStyle = "rgb(0, 0, 0)";
           this.context.fillText(
             this.loadedImages + " / " + this.loaderCount + " loaded",
-            (window.DIM_X / 2) - 100, window.DIM_Y / 2
+            (Dimensions.DIM_X / 2) - 100, Dimensions.DIM_Y / 2
           );
 
           if (this.loadedImages == this.loaderCount) {
@@ -95,14 +96,16 @@ var App = React.createClass({
   },
 
   handleClick: function (evnt) {
-    if (this.map.handleClick(evnt)) {
+    if (this.nav.handleClick(evnt) || this.map.handleClick(evnt)) {
       // for now just rerender the map, but we can do better
       this.map.render(this.context);
+      this.nav.render(this.context);
     }
   },
 
+  // this is for debugging
   handleHover: function (evnt) {
-    this.map.handleHover(evnt);
+    // this.map.handleHover(evnt);
   },
 
   handleKey: function (evnt) {
@@ -110,6 +113,7 @@ var App = React.createClass({
       case "m":
         if (this.map.move()) {
           this.map.render(this.context);
+          this.nav.render(this.context);
         }
         break;
     }
@@ -120,7 +124,7 @@ var App = React.createClass({
       <div onKeyDown={this.handleKey}>
         <canvas
           tabIndex="1"
-          id="test" width={window.DIM_X} height={window.DIM_Y}
+          id="test" width={Dimensions.DIM_X} height={Dimensions.DIM_Y}
           onClick={this.handleClick}
           onMouseMove={this.handleHover}
         ></canvas>
