@@ -5,7 +5,9 @@ var React = require('react'),
     Move = require('./game/Move'),
     Battlefield = require('./game/Battlefield'),
     NavMap = require('./game/NavMap'),
-    GameMap = require('./game/GameMap');
+    GameMap = require('./game/GameMap'),
+
+    MapGenerator = require('./util/MapGenerator.js');
 
 var App = React.createClass({
   startGame: function () {
@@ -116,7 +118,6 @@ var App = React.createClass({
   },
 
   canvasRender: function () {
-    console.log('rerender');
     this.map.render(this.context);
     this.nav.render(this.context);
   },

@@ -37,6 +37,8 @@ GameMap.prototype.placeVisitableObjectAt = function (row, col, visitable) {
 };
 
 GameMap.isObstacle = function (tile) {
+  if (!tile.discovered) return true;
+
   var obstacles = ['creature', 'settlement', 'visitable'];
 
   for (var i = 0; i < obstacles.length; i++) {
@@ -103,7 +105,7 @@ GameMap.prototype.handleClick = function (evnt) {
     this.upper, this.left // row and column offsets
   );
   var hexVal = selection.hex;
-  if (!hexVal) { return false; }
+  if (!hexVal || !hexVal.discovered) { return false; }
 
   if (this.creatureSelection) {
 
@@ -182,14 +184,10 @@ GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
   var creature = this.creatureSelection.creature;
 
   var fromCoords = this.creatureSelection.hexCoords;
-  console.log(fromCoords);
   var fromHex = this.hexGameMap.valueAt(fromCoords);
 
   var toCoords = this.path[pathIdx];
-  console.log(toCoords);
   var toHex = this.hexGameMap.valueAt(toCoords);
-  // console.log(`from: ${fromCoords[0]}, ${fromCoords[1]}`);
-  // console.log(`to: ${toCoords[0]}, ${toCoords[1]}`);
 
   window.setTimeout(
     function () {
@@ -212,16 +210,12 @@ GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
         self.animateAlong(pathIdx - 1, rerender, success);
       }
     },
-    300
+    50
   );
 };
 
 GameMap.prototype.move = function (rerender) {
   if (this.path && this.path.length > 0) {
-    console.log(`Path:`);
-    console.log(this.path[0]);
-    console.log(this.path[this.path.length - 1]);
-    console.log('...');
     this.animating = true;
     this.animateAlong(this.path.length - 2, rerender, function () {
       this.animating = false;

@@ -1,4 +1,23 @@
 var HexUtil = {
+  addPoints: function (p1, p2) {
+    return [
+      p1[0] + p2[0],
+      p1[1] + p2[1]
+    ];
+  },
+
+  centroid: function (points) {
+    var k = points.length;
+    var pointSum = points.reduce(function (acc, point) {
+      return HexUtil.addPoints(acc, point);
+    }, [0, 0]);
+
+    return [
+      pointSum[0] / k,
+      pointSum[1] / k
+    ];
+  },
+
   moveTo: function moveTo(ctx, point) {
     ctx.moveTo(point[0], point[1]);
   },

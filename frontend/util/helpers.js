@@ -28,5 +28,11 @@ var HelperUtil = module.exports = {
   // min is inclusive, max is exclusive
   between: function (val, min, max) {
     return val >= min && val < max;
+  },
+
+  randInRange: function (min, max) {
+    var difference = Math.abs(max - min);
+    var randOffset = Math.floor(Math.random() * difference);
+    return randOffset + min;
   }
 };
