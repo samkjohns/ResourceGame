@@ -1,3 +1,5 @@
+var types = require('../constants/types.js');
+
 var HelperUtil = module.exports = {
   objectUnion: function (ob1, ob2) {
     output = {};
@@ -34,5 +36,46 @@ var HelperUtil = module.exports = {
     var difference = Math.abs(max - min);
     var randOffset = Math.floor(Math.random() * difference);
     return randOffset + min;
+  },
+
+  // gradient for testing
+  // make sure to bind self.animating (or false)
+  getGradient: function (animating, ctx, hex, row, col, maxRow, maxCol) {
+    if (hex.discovered) {
+      if (hex.inPath && !animating) {
+        ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+        ctx.strokeStyle = ctx.fillStyle;
+
+      } else {
+        var opacity = (row / maxRow);
+        var blue = Math.floor(255 * (col / maxCol));
+        var color = `rgba(114, 220, ${blue}, ${opacity})`;
+        var stroke = `rgba(114, 220, ${blue}, 1)`;
+        ctx.fillStyle = color;
+        ctx.strokeStyle = stroke;
+      }
+
+    } else {
+      ctx.fillStyle = 'black';
+      ctx.strokeStyle = 'black';
+    }
+  },
+
+  getFillType: function (ctx, hex) {
+    if (hex.discovered) {
+      var style = hex.inPath ? "rgba(255, 0, 0, .5)" : types.colors[hex.type];
+      ctx.fillStyle = style
+
+    } else {
+      ctx.fillStyle = 'black';
+    }
+
+    ctx.strokeStyle = ctx.fillStyle;
+  },
+
+  getShowAll: function (ctx, hex) {
+    var style = hex.inPath ? "rgba(255, 0, 0, .5)" : types.colors[hex.type];
+    ctx.fillStyle = style
+    ctx.strokeStyle = ctx.fillStyle;
   }
 };

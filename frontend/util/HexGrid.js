@@ -7,7 +7,7 @@ function HexGrid(rows, cols) {
 
     // initialize values
     for (var j = 0; j < this._grid[i].length; j++) {
-      this._grid[i][j] = null;
+      this._grid[i][j] = {};
     }
   }
 }

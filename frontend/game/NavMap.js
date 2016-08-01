@@ -61,26 +61,7 @@ NavMap.prototype.render = function (ctx) {
         ctx, currentWest, hex, self.EDGE_LENGTH,
         rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
         drawnLines, drawnHexes,
-        function (ctx, hex, row, col, maxRow, maxCol) {
-          if (hex.discovered) {
-            if (hex.inPath) {
-              ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-              ctx.strokeStyle = ctx.fillStyle;
-
-            } else {
-              var opacity = (row / maxRow);
-              var blue = Math.floor(255 * (col / maxCol));
-              var color = `rgba(114, 220, ${blue}, ${opacity})`;
-              var stroke = `rgba(114, 220, ${blue}, 1)`;
-              ctx.fillStyle = color;
-              ctx.strokeStyle = stroke;
-            }
-
-          } else {
-            ctx.fillStyle = 'black';
-            ctx.strokeStyle = 'black';
-          }
-        }
+        helpers.getShowAll
       );
 
       currentWest = HexUtil.nextWest(

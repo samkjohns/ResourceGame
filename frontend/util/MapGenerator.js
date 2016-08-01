@@ -1,5 +1,6 @@
 var HexGrid = require('./HexGrid.js'),
     HexUtil = require('./HexUtil.js'),
+    Types = require('../constants/types.js'),
     helpers = require('./helpers.js');
 
 var zoneId = 0;
@@ -21,6 +22,8 @@ Zone.prototype.setOrigin = function (origin) {
   if (this.origin) throw `Already set origin`;
 
   this.origin = origin;
+  if (!this.grid.valueAt(origin)) this.grid.setValue(origin, {});
+  this.grid.valueAt(origin).zoned = true;
 
   // add origin's neighbors to frontier
   // ignore neighbors that are already zoned
@@ -28,6 +31,8 @@ Zone.prototype.setOrigin = function (origin) {
   this.frontier =
     neighbors
       .map(function (point) {
+        if (!this.grid.valueAt(point)) this.grid.setValue(point, {});
+
         return {
           row: point[0],
           col: point[1],
@@ -58,31 +63,49 @@ Zone.prototype.setOrigin = function (origin) {
 };
 
 Zone.prototype.expand = function () {
-  if (this.count < this.maxCount) {
+  if (this.count < this.maxCount && this.frontier.length > 0) {
     var self = this;
-    var randFrontierIdx = Math.floor(Math.random() * this.frontier.length);
+    var randFrontierIdx = helpers.randInRange(0, this.frontier.length);
     var chosen = this.frontier[randFrontierIdx];
+    var point = [chosen.row, chosen.col];
+    if (!this.grid.valueAt(point)) this.grid.setValue(point, {});
+    var chosenJSON = JSON.stringify(point);
 
-    this.inside[JSON.stringify([chosen.row, chosen.col])] = true;
-    chosen.zoned = true;
+    this.inside[chosenJSON] = true;
+    this.frontierSet[chosenJSON] = false;
+    this.frontier.splice(randFrontierIdx, 1);
 
-    var chosenNeighbors = this.grid.neighborsOf([chosen.row, chosen.col]);
-    Object.keys(chosenNeighbors).forEach(function (dir) {
+    chosen.tile.zoned = true;
+    chosen.tile.type = this.type;
+    this.count++;
+
+    var chosenNeighbors = this.grid.neighborCoords(point[0], point[1]);
+    // console.log(chosenNeighbors);
+    chosenNeighbors.forEach(function (nCoord) {
+      if (!self.grid.valueAt(nCoord)) self.grid.setValue(nCoord, {});
+
       var neighbor = {
-        row: neighbors[dir][0],
-        col: neighbors[dir][1],
-        tile: self.grid.valueAt(neigbors[dir])
+        row: nCoord[0],
+        col: nCoord[1],
+        tile: self.grid.valueAt(nCoord)
       };
-      var neighborJSON = JSON.stringify([neighbor.row, neighbor.col]);
+
+      var neighborJSON = JSON.stringify(nCoord);
       var zoned = neighbor.tile.zoned;
       var inside = self.inside[neighborJSON];
-      var inFrontier = self.frontierSet[neighborJSON];
+      var inFrontier = neighbor.tile._frontier;
 
       if (!zoned && !inside && !inFrontier) {
         self.frontier.push(neighbor);
+        self.frontierSet[neighborJSON] = true;
+        neighbor.tile._frontier = true;
       }
     });
+
+    return true;
   }
+
+  return false;
 };
 
 Zone.prototype.linkTo = function (zone) {
@@ -91,6 +114,18 @@ Zone.prototype.linkTo = function (zone) {
     zone.links.push(this);
   }
 };
+
+// window.expandTest = function() {
+//   var grid = new HexGrid(5, 5);
+//   var zone = new Zone(grid, 25);
+//   zone.setOrigin([0, 0]);
+//   debugger
+//
+//   while (true) {
+//     zone.expand();
+//     debugger
+//   }
+// };
 
 function linkZones(starting, inter) {
 
@@ -217,6 +252,32 @@ function midPointOf(zones) {
   ];
 }
 
+function travelToUnoccupied(grid, point, steps) {
+  console.log(`travel to: ${point[0]}, ${point[1]}`);
+  if (steps === 0) return point;
+
+  if (!grid.valueAt(point)) grid.setValue(point, {});
+  grid.valueAt(point)._traveledAlong = true;
+
+  var neighbors = grid.neighborCoords(point[0], point[1]);
+  // console.log(neighbors.length);
+  // debugger
+  var unoccupied = neighbors.filter(function (neighbor) {
+    if (!grid.valueAt(neighbor)) grid.setValue(neighbor, {});
+    var nHex = grid.valueAt(neighbor);
+    return !nHex.zoned && !nHex._traveledAlong;
+  });
+
+  if (unoccupied.length === 0) {
+    console.log("returned early because there were no options");
+    return point;
+  }
+
+  var rIdx = helpers.randInRange(0, unoccupied.length);
+  var nextPoint = unoccupied[rIdx];
+  return travelToUnoccupied(grid, nextPoint, steps - 1);
+}
+
 function setOrigins(grid, starting, interior, maxCount) {
   // starting zone origins should be on edges
   var edges = edgesFor(grid);
@@ -256,7 +317,17 @@ function setOrigins(grid, starting, interior, maxCount) {
       return link.origin;
     });
 
-    inter.setOrigin(midPointOf(linksWithOrigins));
+    var linksMidpoint = midPointOf(linksWithOrigins);
+    var hex = grid.valueAt(linksMidpoint);
+    if (!hex || !hex.zoned) {
+      inter.setOrigin(linksMidpoint);
+
+    } else {
+      var origin = travelToUnoccupied(
+        grid, linksMidpoint, Math.floor(inter.maxCount / 10)
+      );
+      inter.setOrigin(origin);
+    }
   }
 }
 
@@ -270,23 +341,52 @@ function generateMap(rows, cols, nPlayers) {
 
   var startingZones = [];
   for (var i = 0; i < nPlayers; i++) {
-    startingZones.push(new Zone(grid));
+    var z = new Zone(grid, maxCount);
+    var typeIdx = helpers.randInRange(0, Types.starting.length);
+    var type = Types.starting[typeIdx];
+    if (!type) throw `error setting type. typeIdx was ${typeIdx}`;
+    z.type = type;
+    startingZones.push(z);
   }
 
   var nInterZones = nZones - nPlayers;
   var interZones = [];
   for (var i = 0; i < nInterZones; i++) {
-    interZones.push(new Zone(grid));
+    var z = new Zone(grid, maxCount);
+    var typeIdx = helpers.randInRange(0, Types.all.length);
+    var type = Types.all[typeIdx];
+    if (!type) throw `error setting type. typeIdx was ${typeIdx}`;
+    z.type = type;
+    interZones.push(z);
   }
 
   linkZones(startingZones, interZones);
   setOrigins(grid, startingZones, interZones, maxCount);
 
-  debugger
-  // var zone = new Zone([3, 3], grid, maxCount);
-  // zone.expand();
+  var allZones = startingZones.concat(interZones);
+  var iterCount = 0;
+  while (true) {
+    if (allZones.every(function (zone) {
+      return zone.maxCount - zone.count <= 1;
+    }) ) {
+      break;
+    }
 
-  return grid;
+    var flag = false;
+    allZones.forEach(function (zone) {
+      if (zone.expand()) flag = true;
+    });
+
+    if (!flag) break;
+  }
+
+  console.log('done');
+
+  return {
+    grid: grid,
+    starting: startingZones,
+    interior: interZones
+  };
 }
 
 window.generateMap = generateMap;

@@ -45,7 +45,8 @@ var App = React.createClass({
   componentDidMount: function () {
     this.context = document.getElementById("test").getContext('2d');
     this.context.fillStyle = "rgb(255, 255, 255)";
-    this.map = new GameMap();
+    var gResult = generateMap(50, 50, 3);
+    this.map = new GameMap(gResult.grid);
     window.clearCanvas = function () {
       this.context.clearRect(0, 0, Dimensions.DIM_X, Dimensions.DIM_Y);
     }.bind(this);
@@ -81,7 +82,7 @@ var App = React.createClass({
           );
 
           if (this.loadedImages == this.loaderCount) {
-            setTimeout(this.startGame, 350);
+            setTimeout(this.startGame, 50);
           }
         }.bind(this)
       }.bind(this));

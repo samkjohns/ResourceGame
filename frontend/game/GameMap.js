@@ -1,10 +1,12 @@
-var testGameMap = require('./resources/testmap');
+// var testGameMap = require('./resources/testmap');
 var breadthFirstPath = require('../util/PathFinder.js');
 var HexUtil = require('../util/HexUtil.js');
-var debug_log = require('../util/helpers.js').debug_log;
+var Types = require('../constants/types.js');
+var helpers = require('../util/helpers.js');
+var debug_log = helpers.debug_log;
 
-function GameMap () {
-  this.hexGameMap = testGameMap;
+function GameMap (grid) {
+  this.hexGameMap = grid;
   this.creatureSelection = null;
   this.upper = 0;
   this.left = 0;
@@ -225,13 +227,8 @@ GameMap.prototype.move = function (rerender) {
   } return false;
 };
 
-GameMap.prototype.getFillType = function (hex, type) {
-  return hex.inPath ? "rgba(255, 0, 0, .5)" : GameMap.colors[hex.type];
-  // if (hex.inPath) return "rgba(255, 0, 0, .5)";
-};
-
 GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
-  if (!hex.discovered) return;
+  // if (!hex.discovered) return;
 
   var nwX, nwY;
   nwX = ((colIdx - this.left) * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 10;
@@ -267,27 +264,7 @@ GameMap.prototype.render = function (ctx) {
         ctx, currentWest, hex, GameMap.EDGE_LENGTH,
         rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
         drawnLines, drawnHexes,
-        function (ctx, hex, row, col, maxRow, maxCol) {
-
-          if (hex.discovered) {
-            if (hex.inPath && !self.animating) {
-              ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-              ctx.strokeStyle = ctx.fillStyle;
-
-            } else {
-              var opacity = (row / maxRow);
-              var blue = Math.floor(255 * (col / maxCol));
-              var color = `rgba(114, 220, ${blue}, ${opacity})`;
-              var stroke = `rgba(114, 220, ${blue}, 1)`;
-              ctx.fillStyle = color;
-              ctx.strokeStyle = stroke;
-            }
-
-          } else {
-            ctx.fillStyle = 'black';
-            ctx.strokeStyle = 'black';
-          }
-        }
+        helpers.getShowAll
       );
 
       // then draw objects
