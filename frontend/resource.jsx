@@ -45,14 +45,16 @@ var App = React.createClass({
   componentDidMount: function () {
     this.context = document.getElementById("test").getContext('2d');
     this.context.fillStyle = "rgb(255, 255, 255)";
-    var gResult = generateMap(50, 50, 3);
+    var gResult = generateMap(70, 70, 4);
     this.map = new GameMap(gResult.grid);
     window.clearCanvas = function () {
       this.context.clearRect(0, 0, Dimensions.DIM_X, Dimensions.DIM_Y);
+      this.context.fillStyle = 'rgb(245, 245, 245)';
+      this.context.fillRect(0, 0, Dimensions.DIM_X, Dimensions.DIM_Y);
     }.bind(this);
     window.map = this.map;
 
-    this.nav = new NavMap(this.map.hexGameMap);
+    this.nav = new NavMap(this.map);
     window.nav = this.nav;
 
     this.loadImages();
@@ -111,10 +113,12 @@ var App = React.createClass({
   },
 
   handleKey: function (evnt) {
-    switch (evnt.key) {
-      case "m":
-        this.map.move(this.canvasRender);
-        break;
+    if (evnt.key.startsWith('Arrow')) {
+      var dir = evnt.key.split('Arrow')[1];
+      this.map.handleKey(dir, this.canvasRender);
+
+    } else if (evnt.key === "m") {
+      this.map.move(this.canvasRender);
     }
   },
 

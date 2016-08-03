@@ -253,7 +253,7 @@ function midPointOf(zones) {
 }
 
 function travelToUnoccupied(grid, point, steps) {
-  console.log(`travel to: ${point[0]}, ${point[1]}`);
+  // console.log(`travel to: ${point[0]}, ${point[1]}`);
   if (steps === 0) return point;
 
   if (!grid.valueAt(point)) grid.setValue(point, {});
@@ -269,7 +269,7 @@ function travelToUnoccupied(grid, point, steps) {
   });
 
   if (unoccupied.length === 0) {
-    console.log("returned early because there were no options");
+    // console.log("returned early because there were no options");
     return point;
   }
 
@@ -331,10 +331,64 @@ function setOrigins(grid, starting, interior, maxCount) {
   }
 }
 
+// Gives unzoned tiles a type
+// If they are not isolated, they become mountains
+// Otherwise they become the type of one of their neighbors
+function cleanTile(grid, tile, r, c) {
+  if (!tile.type) {
+    var type;
+    var neighborsOb = grid.neighborsOf(r, c);
+
+    var nType = null;
+    var isAttached = Object.keys(neighborsOb).some(function (dir) {
+      var neighbor = neighborsOb[dir];
+      var attached = !neighbor.type || neighbor.type === 'mountain';
+      if (!attached) nType = neighbor.type;
+      return attached;
+    });
+
+    if (isAttached) {
+      tile.type = 'mountain';
+    } else {
+      tile.type = nType;
+    }
+  }
+}
+
+function cleanGrid(grid) {
+  grid.forEach(function (tile, r, c) {
+    tile.discovered = true; // for debugging purposes
+    cleanTile(grid, tile, r, c);
+  });
+}
+
+function placeBorderMountains(grid, zones) {
+  zones.forEach(function (zone) {
+    var borderTiles = [];
+
+    Object.keys(zone.inside).forEach(function (pointJSON) {
+      var point = JSON.parse(pointJSON);
+      var neighbors = grid.neighborTiles(point[0], point[1]);
+
+      var isBorder = neighbors.some(function (neighbor) {
+        return neighbor.type !== zone.type;
+      });
+
+      if (isBorder) {
+        borderTiles.push(grid.valueAt(point));
+      }
+    });
+
+    borderTiles.forEach(function (tile) {
+      tile.type = 'mountain';
+    });
+  });
+}
+
 function generateMap(rows, cols, nPlayers) {
   var grid = new HexGrid(rows, cols);
 
-  var nZones = (nPlayers * 2) + helpers.randInRange(-1, 2);
+  var nZones = (nPlayers * 2) + helpers.randInRange(3, 5);
   var maxCount = Math.ceil(
     (rows * cols) / nZones
   );
@@ -372,15 +426,16 @@ function generateMap(rows, cols, nPlayers) {
       break;
     }
 
-    var flag = false;
+    var breakFlag = true;
     allZones.forEach(function (zone) {
-      if (zone.expand()) flag = true;
+      if (zone.expand()) breakFlag = false;
     });
 
-    if (!flag) break;
+    if (breakFlag) break;
   }
 
-  console.log('done');
+  cleanGrid(grid);
+  placeBorderMountains(grid, allZones);
 
   return {
     grid: grid,

@@ -61,21 +61,25 @@ var HelperUtil = module.exports = {
     }
   },
 
-  getFillType: function (ctx, hex) {
+  getFillType: function (animating, ctx, hex) {
     if (hex.discovered) {
-      var style = hex.inPath ? "rgba(255, 0, 0, .5)" : types.colors[hex.type];
-      ctx.fillStyle = style
+      var style = (hex.inPath && !animating) ?
+        "rgba(255, 0, 0, .5)" : types.colors[hex.type];
+      ctx.fillStyle = style;
 
     } else {
       ctx.fillStyle = 'black';
     }
 
-    ctx.strokeStyle = ctx.fillStyle;
+    // ctx.strokeStyle = ctx.fillStyle;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
   },
 
-  getShowAll: function (ctx, hex) {
-    var style = hex.inPath ? "rgba(255, 0, 0, .5)" : types.colors[hex.type];
-    ctx.fillStyle = style
-    ctx.strokeStyle = ctx.fillStyle;
+  getShowAll: function (animating, ctx, hex) {
+    var style = (hex.inPath && !animating) ?
+      "rgba(255, 0, 0, .5)" : types.colors[hex.type];
+    ctx.fillStyle = style;
+    // ctx.strokeStyle = ctx.fillStyle;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
   }
 };

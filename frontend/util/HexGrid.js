@@ -52,6 +52,7 @@ var _evenNeighborCoords = {
   SW: [0, -1]
 };
 
+// returns an object of directions --> [row, col] coordinates
 HexGrid.prototype.neighborsOf = function (row, col) {
   var neighbors = {};
 
@@ -66,6 +67,7 @@ HexGrid.prototype.neighborsOf = function (row, col) {
   return neighbors;
 };
 
+// returns an array of [row, col] coordinates
 HexGrid.prototype.neighborCoords = function (row, col) {
   var coords = col % 2 === 0 ? _evenNeighborCoords : _oddNeighborCoords;
   return Object.keys(coords).map(function (key) {
@@ -73,6 +75,21 @@ HexGrid.prototype.neighborCoords = function (row, col) {
   }).filter(function (point) {
     return this.inBounds(point[0], point[1]);
   }.bind(this));
+};
+
+HexGrid.prototype.neighborTiles = function (row, col) {
+  var self = this;
+  var tiles = [];
+  var coords = col % 2 === 0 ? _evenNeighborCoords : _oddNeighborCoords;
+
+  Object.keys(coords).forEach(function (dir) {
+    var point = HexGrid.addPoints(coords[dir], [row, col]);
+    if (self.inBounds(point[0], point[1])) {
+      tiles.push(self.valueAt(point));
+    }
+  });
+
+  return tiles;
 };
 
 HexGrid.prototype.southWestOf = function (row, col) {
@@ -115,8 +132,10 @@ HexGrid.prototype.forEach = function (callback, bounds) {
 
     for (var i = startRow; i < endRow; i++) {
       for (var j = startCol; j < endCol; j++) {
-        var hex = this._grid[i][j];
-        callback(hex, i, j);
+        if (this.inBounds(i, j)) {
+          var hex = this._grid[i][j];
+          callback(hex, i, j);
+        }
       }
     }
   }

@@ -3,18 +3,19 @@ var Dimensions = require('../constants/dimensions.js'),
     helpers = require('../util/helpers.js'),
     HexUtil = require('../util/HexUtil.js');
 
-NavMap.DIM_UPPER = 10;
-NavMap.DIM_LOWER = 160;
+NavMap.DIM_UPPER = 11;
+NavMap.DIM_LOWER = 161;
 NavMap.DIM_LEFT = Dimensions.DIM_X - 170;
 NavMap.DIM_RIGHT = Dimensions.DIM_X - 20;
 
 NavMap.DIM_X = NavMap.DIM_RIGHT - NavMap.DIM_LEFT;
 NavMap.DIM_Y = NavMap.DIM_LOWER - NavMap.DIM_UPPER;
 
-function NavMap(hexMap) {
-  this.hexGameMap = hexMap;
+function NavMap(gameMap) {
+  this.map = gameMap;
+  this.hexGameMap = gameMap.hexGameMap;
 
-  this.SIDE_THREE = (NavMap.DIM_Y - 1) / (hexMap.rows * 2);
+  this.SIDE_THREE = (NavMap.DIM_Y - 3) / (this.hexGameMap.rows * 2);
   this.HALF_EDGE = this.SIDE_THREE / Math.sqrt(3);
   this.EDGE_LENGTH = this.HALF_EDGE * 2;
 }
@@ -46,6 +47,21 @@ NavMap.clear = function (ctx) {
   );
 };
 
+NavMap.prototype.renderBounds = function (ctx) {
+  var zeroX = NavMap.DIM_LEFT + this.HALF_EDGE;
+  var zeroY = NavMap.DIM_UPPER + this.SIDE_THREE;
+
+  var left = zeroX + (this.EDGE_LENGTH * this.map.left * 1.5);
+  var right = zeroX + (this.EDGE_LENGTH * this.map.right * 1.5);
+  var upper = zeroY + (this.SIDE_THREE * this.map.upper * 2);
+  var lower = zeroY + (this.SIDE_THREE * this.map.lower * 2);
+  var xLen = right - left;
+  var yLen = lower - upper;
+
+  ctx.strokeStyle = 'black';
+  ctx.strokeRect(left, upper, xLen, yLen);
+};
+
 NavMap.prototype.render = function (ctx) {
   NavMap.clear(ctx);
 
@@ -61,7 +77,7 @@ NavMap.prototype.render = function (ctx) {
         ctx, currentWest, hex, self.EDGE_LENGTH,
         rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
         drawnLines, drawnHexes,
-        helpers.getShowAll
+        helpers.getShowAll.bind(null, false)
       );
 
       currentWest = HexUtil.nextWest(
@@ -80,6 +96,7 @@ NavMap.prototype.render = function (ctx) {
     NavMap.DIM_LEFT, NavMap.DIM_UPPER,
     NavMap.DIM_X, NavMap.DIM_Y
   );
+  this.renderBounds(ctx);
 };
 
 

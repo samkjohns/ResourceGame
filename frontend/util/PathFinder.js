@@ -42,6 +42,7 @@ LinkedListQueue.prototype.dequeue = function () {
 
 // Breadth-first
 function breadthFirstPath(hexGrid, start, goal, isObstacle) {
+  console.log('finding path');
   var frontier = new LinkedListQueue();
   frontier.enqueue(start);
   var cameFrom = {};
@@ -80,6 +81,7 @@ function breadthFirstPath(hexGrid, start, goal, isObstacle) {
 
 // helper function
 function _reconstructPath(cameFrom, current) {
+  console.log('found a path');
   var currentKey = JSON.stringify(current);
   var totalPath = [current];
 

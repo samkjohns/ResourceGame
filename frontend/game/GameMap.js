@@ -12,11 +12,11 @@ function GameMap (grid) {
   this.left = 0;
   this.lower = GameMap.DISPLAY_SIZE_Y;
   this.right = GameMap.DISPLAY_SIZE_X;
-  console.log(`${this.hexGameMap.rows}, ${this.hexGameMap.cols}`);
+  // console.log(`${this.hexGameMap.rows}, ${this.hexGameMap.cols}`);
 }
 
-GameMap.DISPLAY_SIZE_X = 29;
-GameMap.DISPLAY_SIZE_Y = 14;
+GameMap.DISPLAY_SIZE_X = 30;
+GameMap.DISPLAY_SIZE_Y = 15;
 
 GameMap.EDGE_LENGTH = 20;
 GameMap.HALF_EDGE = 10;
@@ -42,9 +42,10 @@ GameMap.isObstacle = function (tile) {
   if (!tile.discovered) return true;
 
   var obstacles = ['creature', 'settlement', 'visitable'];
+  var types = ['water', 'mountain'];
 
   for (var i = 0; i < obstacles.length; i++) {
-    if(tile[obstacles[i]]) {
+    if(tile[obstacles[i]] || types.indexOf(tile.type) > -1) {
       return true;
     }
   }
@@ -99,6 +100,46 @@ GameMap.prototype.handleHover = function (evnt) {
   }
 };
 
+GameMap.prototype.shift = function (dir, n) {
+  var bound1, bound2;
+  var next1, next2;
+  var limit;
+
+  if (dir == 'x') {
+    bound1 = 'left';
+    bound2 = 'right';
+    limit = this.hexGameMap.cols;
+
+  } else {
+    bound1 = 'upper';
+    bound2 = 'lower';
+    limit = this.hexGameMap.rows;
+  }
+
+  next1 = this[bound1] + n;
+  next2 = this[bound2] + n;
+
+  if (helpers.between(next1, 0, limit) && helpers.between(next2, 0, limit)) {
+    this[bound1] = next1;
+    this[bound2] = next2;
+  }
+
+};
+
+GameMap.prototype.handleKey = function (dir, rerender) {
+  var n;
+  if (dir === "Right" || dir === "Left") {
+    n = dir === "Right" ? 1 : -1;
+    this.shift('x', n);
+
+  } else {
+    n = dir === "Up" ? -1 : 1;
+    this.shift('y', n);
+  }
+
+  rerender();
+};
+
 GameMap.prototype.handleClick = function (evnt) {
   var selection = this.hexGameMap.clickedHex(
     evnt,                 // the click event
@@ -108,6 +149,8 @@ GameMap.prototype.handleClick = function (evnt) {
   );
   var hexVal = selection.hex;
   if (!hexVal || !hexVal.discovered) { return false; }
+
+  debugger
 
   if (this.creatureSelection) {
 
@@ -250,6 +293,8 @@ GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
 GameMap.prototype.render = function (ctx) {
   window.clearCanvas();
 
+  // console.log(this.path);
+
   var drawnLines = {};
   var drawnHexes = {};
   var self = this;
@@ -264,7 +309,7 @@ GameMap.prototype.render = function (ctx) {
         ctx, currentWest, hex, GameMap.EDGE_LENGTH,
         rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
         drawnLines, drawnHexes,
-        helpers.getShowAll
+        helpers.getShowAll.bind(null, self.animating)
       );
 
       // then draw objects

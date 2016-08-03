@@ -17,11 +17,12 @@ module.exports = {
   ],
 
   colors: {
-    grass: "rgba(114, 220, 90, 0.65)",
-    water: "rgba(90, 114, 220, 0.65)",
-    ice: "rgba(50, 100, 250, 0.5)",
-    plains: "rgba(180, 130, 50, .65)",
-    tundra: "rgba(100, 10, 150, .8)"
+    grass: "rgb(114, 220, 90)",
+    water: "rgb(90, 114, 220)",
+    ice: "rgb(195, 243, 247)",
+    plains: "rgb(180, 130, 50)",
+    tundra: "rgb(106, 85, 117)",
+    mountain: 'black'
   }
 
 };
