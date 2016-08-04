@@ -274,7 +274,7 @@ GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
 
   var nwX, nwY;
   nwX = ((colIdx - this.left) * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 10;
-  nwY = ((rowIdx - this.upper) * GameMap.SIDE_THREE * 2) + 10
+  nwY = ((rowIdx - this.upper) * GameMap.SIDE_THREE * 2) + 10;
   if (colIdx % 2 === 1) nwY += GameMap.EDGE_LENGTH;
 
   var upperLeft = [nwX + GameMap.HALF_EDGE, nwY];
@@ -301,8 +301,12 @@ GameMap.prototype.render = function (ctx) {
   var vertices;
   // var currentWest = [10, 10 + GameMap.SIDE_THREE];
 
-  var startY = 10 - GameMap.SIDE_THREE - ((self.left % 2) * GameMap.SIDE_THREE);
   var startX = 10 - GameMap.HALF_EDGE - GameMap.EDGE_LENGTH;
+  var startY = 20 - GameMap.SIDE_THREE - ((self.left % 2) * GameMap.SIDE_THREE);
+  // if (self.upper % 2 === 1 && self.left % 2 === 1) {
+  //   startY -= GameMap.SIDE_THREE;
+  // }
+
   var currentWest = [startX, startY];
 
   self.hexGameMap.forEach(

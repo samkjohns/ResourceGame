@@ -97,11 +97,11 @@ var HexUtil = {
   nextWest: function (
     current, row, col, upperRow, lastCol, startX, startY, sideThree, vertices
   ) {
+    // console.log(`upperRow: ${upperRow}`);
     if (col === lastCol - 1) {
-      return [
-        startX,
-        startY + sideThree + ((row - upperRow + 1) * sideThree * 2)
-      ];
+      var y = startY + ((row - upperRow + 1) * sideThree * 2);
+
+      return [startX, y];
 
     } else if (col % 2 === 0) {
       return vertices.SE;
