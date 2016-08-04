@@ -1,11 +1,14 @@
 var React = require('react'),
     ReactDOM = require('react-dom'),
+
     Dimensions = require('./constants/dimensions.js'),
     Creature = require('./game/Creature'),
     Move = require('./game/Move'),
     Battlefield = require('./game/Battlefield'),
     NavMap = require('./game/NavMap'),
     GameMap = require('./game/GameMap'),
+
+    GameDetail = require('./components/GameDetail'),
 
     VoronoiGenerator = require('./util/VoronoiGenerator.js'),
     MapGenerator = require('./util/MapGenerator.js');
@@ -141,6 +144,7 @@ var App = React.createClass({
           onClick={this.handleClick}
           onMouseMove={this.handleHover}
         ></canvas>
+        <GameDetail/>
       </div>
     );
   }
