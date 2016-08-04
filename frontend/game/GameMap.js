@@ -150,8 +150,6 @@ GameMap.prototype.handleClick = function (evnt) {
   var hexVal = selection.hex;
   if (!hexVal || !hexVal.discovered) { return false; }
 
-  debugger
-
   if (this.creatureSelection) {
 
     // if the click is on a selected creature, deselect
@@ -272,11 +270,12 @@ GameMap.prototype.move = function (rerender) {
 
 GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
   // if (!hex.discovered) return;
+  if (!hex) return;
 
   var nwX, nwY;
   nwX = ((colIdx - this.left) * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 10;
   nwY = ((rowIdx - this.upper) * GameMap.SIDE_THREE * 2) + 10
-  if (this.left % 2 !== colIdx % 2) nwY += GameMap.EDGE_LENGTH;
+  if (colIdx % 2 === 1) nwY += GameMap.EDGE_LENGTH;
 
   var upperLeft = [nwX + GameMap.HALF_EDGE, nwY];
 
@@ -300,7 +299,11 @@ GameMap.prototype.render = function (ctx) {
   var self = this;
 
   var vertices;
-  var currentWest = [10, 10 + GameMap.SIDE_THREE];
+  // var currentWest = [10, 10 + GameMap.SIDE_THREE];
+
+  var startY = 10 - GameMap.SIDE_THREE - ((self.left % 2) * GameMap.SIDE_THREE);
+  var startX = 10 - GameMap.HALF_EDGE - GameMap.EDGE_LENGTH;
+  var currentWest = [startX, startY];
 
   self.hexGameMap.forEach(
     function (hex, rowIdx, colIdx) {
@@ -309,6 +312,7 @@ GameMap.prototype.render = function (ctx) {
         ctx, currentWest, hex, GameMap.EDGE_LENGTH,
         rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
         drawnLines, drawnHexes,
+        // helpers.getGradient.bind(null, self.animating)
         helpers.getShowAll.bind(null, self.animating)
       );
 
@@ -317,13 +321,13 @@ GameMap.prototype.render = function (ctx) {
 
       currentWest = HexUtil.nextWest(
         currentWest, rowIdx, colIdx,
-        self.upper, self.right,
-        10, 10, GameMap.SIDE_THREE, vertices
+        self.upper - 1, self.right,
+        startX, startY, GameMap.SIDE_THREE, vertices
       );
     },
 
     {
-      upperLeft: [self.upper, self.left],
+      upperLeft: [self.upper - 1, self.left - 1],
       lowerRight: [self.lower, self.right]
     }
   );

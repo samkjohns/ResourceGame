@@ -129,13 +129,20 @@ HexGrid.prototype.forEach = function (callback, bounds) {
     var endRow = bounds.lowerRight[0];
     var startCol = bounds.upperLeft[1];
     var endCol = bounds.lowerRight[1];
+    console.log(`row ${startRow} --> row ${endRow}`);
+    console.log(`col ${startCol} --> col ${endCol}`);
 
     for (var i = startRow; i < endRow; i++) {
       for (var j = startCol; j < endCol; j++) {
-        if (this.inBounds(i, j)) {
-          var hex = this._grid[i][j];
-          callback(hex, i, j);
+        // if (this.inBounds(i, j)) {
+        var hex;
+        if (i < 0 || j < 0){
+          hex = null;
+        } else {
+          hex = this._grid[i][j];
         }
+        callback(hex, i, j);
+        // }
       }
     }
   }

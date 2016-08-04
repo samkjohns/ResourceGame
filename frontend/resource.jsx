@@ -7,7 +7,9 @@ var React = require('react'),
     NavMap = require('./game/NavMap'),
     GameMap = require('./game/GameMap'),
 
+    VoronoiGenerator = require('./util/VoronoiGenerator.js'),
     MapGenerator = require('./util/MapGenerator.js');
+
 
 var App = React.createClass({
   startGame: function () {
@@ -45,8 +47,11 @@ var App = React.createClass({
   componentDidMount: function () {
     this.context = document.getElementById("test").getContext('2d');
     this.context.fillStyle = "rgb(255, 255, 255)";
-    var gResult = generateMap(70, 70, 4);
-    this.map = new GameMap(gResult.grid);
+    // var gResult = generateMap(70, 70, 4);
+    var gResult = VoronoiGenerator(70, 70, 4);
+    // console.log(gResult);
+    // this.map = new GameMap(gResult.grid);
+    this.map = new GameMap(gResult);
     window.clearCanvas = function () {
       this.context.clearRect(0, 0, Dimensions.DIM_X, Dimensions.DIM_Y);
       this.context.fillStyle = 'rgb(245, 245, 245)';

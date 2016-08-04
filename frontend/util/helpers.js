@@ -41,7 +41,7 @@ var HelperUtil = module.exports = {
   // gradient for testing
   // make sure to bind self.animating (or false)
   getGradient: function (animating, ctx, hex, row, col, maxRow, maxCol) {
-    if (hex.discovered) {
+    // if (hex.discovered) {
       if (hex.inPath && !animating) {
         ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
         ctx.strokeStyle = ctx.fillStyle;
@@ -55,10 +55,10 @@ var HelperUtil = module.exports = {
         ctx.strokeStyle = stroke;
       }
 
-    } else {
-      ctx.fillStyle = 'black';
-      ctx.strokeStyle = 'black';
-    }
+    // } else {
+    //   ctx.fillStyle = 'black';
+    //   ctx.strokeStyle = 'black';
+    // }
   },
 
   getFillType: function (animating, ctx, hex) {

@@ -40,12 +40,15 @@ var HexUtil = {
     drawnLines, drawnHexes,
     getStyles
   ) {
+
     var startX = west[0];
     var startY = west[1];
 
     var vertices = HexUtil.verticesFor(west, edgeLength);
+    if (!hex) return vertices;
 
     var hexJSON = JSON.stringify(vertices);
+
     if (!drawnHexes[hexJSON]) {
       ctx.beginPath();
 
