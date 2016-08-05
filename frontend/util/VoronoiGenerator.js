@@ -1,6 +1,7 @@
 var HexGrid = require('./HexGrid.js'),
     HexUtil = require('./HexUtil.js'),
     Types = require('../constants/types.js'),
+    breadthFirstPath = require('../util/PathFinder.js'),
     helpers = require('./helpers.js');
 
 function distance(p1, p2) {
@@ -57,9 +58,88 @@ function getOrigins(grid, nPoints, min, max) {
 function distancesFromOrigin(point, origins) {
   return origins.map(function (origin) {
     return {
+      origin: origin,
       distance: distance(point, origin.point),
       type: origin.type
     };
+  });
+}
+
+function placeBorderMountains(grid) {
+  var borderTiles = [];
+  var links = {};
+
+  grid.forEach(function (tile, i, j) {
+    var neighbors = grid.neighborTiles(i, j);
+    var borderZone = null;
+    var origin = null;
+    var isBorder = neighbors.some(function (neighbor) {
+      if (neighbor._zone !== tile._zone) {
+        borderZone = neighbor._zone;
+        origin = tile._zone;
+        return true;
+      }
+      return false;
+    });
+
+    if (isBorder) {
+      var originJSON = JSON.stringify(origin);
+      var borderJSON = JSON.stringify(borderZone);
+      links[originJSON] = links[originJSON] || {};
+      links[borderJSON] = links[borderJSON] || {};
+      links[originJSON][borderJSON] = true;
+      links[borderJSON][originJSON] = true;
+
+      borderTiles.push(grid.valueAt(i, j));
+    }
+  });
+
+  borderTiles.forEach(function (tile) {
+    tile.type = 'mountain';
+  });
+
+  linkZones(grid, links);
+}
+
+// links:
+//    [0, 0]: { [10, 10]: true, [4, 4]: true },
+//    [10, 10]: { [0, 0]: true },
+//    [4, 4]: { [0, 0]: true }
+function linkZones(grid, links) {
+  // zoneJSONs:   [ '[0, 0]', '[10, 10]', '[4, 4]' ]
+  var zoneJSONs = Object.keys(links);
+
+  zoneJSONs.forEach(function (zoneJSON) {
+    // zone: [0, 0]
+    var zone = JSON.parse(zoneJSON);
+
+    // linkedZones:   { [10, 10]: true, [4, 4]: true }
+    var linkedZones = Object.keys(links[zoneJSON]);
+
+    linkedZones.forEach(function (borderJSON) {
+      // border: [10, 10]
+      var border = JSON.parse(borderJSON);
+
+      if (links[zoneJSON][borderJSON]) {
+        var path = breadthFirstPath(
+          grid, zone.point, border.point,
+          function () { return false; }
+        );
+
+        path.forEach(
+          function (point) {
+            var tile = grid.valueAt(point);
+            if (tile.type === 'mountain') {
+              tile.type = zone.type;
+            }
+          }
+        );
+
+        // remove this link so we don't visit it again
+        links[zoneJSON][borderJSON] = false;
+        links[borderJSON][zoneJSON] = false;
+      }
+    });
   });
 }
 
@@ -84,9 +164,15 @@ function generateVoronoi(rows, cols, nPlayers) {
       }
     );
     hex.type = distances[0].type;
+    hex._zone = distances[0].origin;
   });
 
-  return grid;
+  placeBorderMountains(grid);
+
+  return {
+    grid: grid,
+    zones: origins
+  };
 }
 
 module.exports = generateVoronoi;

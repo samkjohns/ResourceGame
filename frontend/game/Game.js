@@ -1,26 +1,20 @@
-var Dimensions = require('./constants/dimensions.js'),
-    Creature = require('./game/Creature'),
-    Move = require('./game/Move'),
-    Battlefield = require('./game/Battlefield'),
-    NavMap = require('./game/NavMap'),
-    GameMap = require('./game/GameMap'),
-
-    GameDetail = require('./components/GameDetail'),
-
-    VoronoiGenerator = require('./util/VoronoiGenerator.js'),
-    MapGenerator = require('./util/MapGenerator.js');
+var Creature = require('./Creature'),
+    Move = require('./Move'),
+    Battlefield = require('./Battlefield'),
+    NavMap = require('./NavMap'),
+    GameMap = require('./GameMap'),
+    VoronoiGenerator = require('../util/VoronoiGenerator.js'),
+    MapGenerator = require('../util/MapGenerator.js');
 
 function Game(ctx) {
   this.ctx = ctx;
 
   // var gResult = generateMap(70, 70, 4);
   var gResult = VoronoiGenerator(70, 70, 4);
-  // console.log(gResult);
-  // this.map = new GameMap(gResult.grid);
-  this.map = new GameMap(gResult);
+  this.map = new GameMap(gResult.grid);
   this.nav = new NavMap(this.map);
 
-
+  this.canvasRender();
 }
 
 Game.prototype.canvasRender = function () {
@@ -44,3 +38,5 @@ Game.prototype.handleKey = function (evnt) {
     this.map.move(this.canvasRender.bind(this));
   }
 };
+
+module.exports = Game;

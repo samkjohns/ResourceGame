@@ -6,6 +6,8 @@ var helpers = require('../util/helpers.js');
 //   point: [row, col]
 // populations is an object of creature type --> number
 function Settlement(location, populations) {
+  this.image = window.resourceImages.icons.settlement;
+
   this.location = location;
   this.territory = [];
   this.territorySet = {};

@@ -429,6 +429,7 @@ function generateMap(rows, cols, nPlayers) {
     var breakFlag = true;
     allZones.forEach(function (zone) {
       if (zone.expand()) breakFlag = false;
+      while (zone.expand()) {}
     });
 
     if (breakFlag) break;
