@@ -38,6 +38,15 @@ GameMap.prototype.placeVisitableObjectAt = function (row, col, visitable) {
   this.hexGameMap.valueAt(row, col).visitable = visitable;
 };
 
+GameMap.prototype.placeSettlementAt = function (row, col, settlement) {
+  this.hexGameMap.valueAt(row, col).settlement = settlement;
+};
+
+GameMap.prototype.placeAt = function (row, col, type, thing) {
+  var tile = this.hexGameMap.valueAt(row, col);
+  tile[type] = thing;
+};
+
 GameMap.isObstacle = function (tile) {
   if (!tile.discovered) return true;
 
@@ -278,6 +287,9 @@ GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
   if (colIdx % 2 === 1) nwY += GameMap.EDGE_LENGTH;
 
   var upperLeft = [nwX + GameMap.HALF_EDGE, nwY];
+
+  hex.settlement &&
+  ctx.drawImage(hex.settlement.image, upperLeft[0], upperLeft[1], 25, 25);
 
   hex.object &&
   ctx.drawImage(hex.object.image, upperLeft[0], upperLeft[1], 25, 25);

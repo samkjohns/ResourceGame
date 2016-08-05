@@ -51,7 +51,7 @@ var App = React.createClass({
             (Dimensions.DIM_X / 2) - 100, Dimensions.DIM_Y / 2
           );
 
-          if (self.loadedImages == self.loaderCount) {
+          if (self.loadedImages === self.loaderCount) {
             self.startGame();
           }
         }
@@ -61,12 +61,14 @@ var App = React.createClass({
 
     this.loaderCount =
       Object.keys(window.resourceImages.spriteSources).length +
-      Object.keys(window.resourceImages.iconSources).length;
+      Object.keys(window.resourceImages.iconSources).length +
+      Object.keys(window.resourceImages.tileSources).length;
 
     this.loadedImages = 0;
 
-    loadFolder('spriteSources');
+    loadFolder('tileSources');
     loadFolder('iconSources');
+    loadFolder('spriteSources');
   },
 
   handleClick: function (evnt) {

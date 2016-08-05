@@ -38,6 +38,36 @@ var HelperUtil = module.exports = {
     return randOffset + min;
   },
 
+  distance: function (p1, p2) {
+    var xDiff = p1[0] - p2[0];
+    var yDiff = p1[1] - p2[1];
+
+    var xSquare = xDiff * xDiff;
+    var ySquare = yDiff * yDiff;
+
+    return Math.sqrt(xSquare + ySquare);
+  },
+
+  weightedRandomChoice: function (array, weights, total) {
+    var weights_total = total || weights.reduce(function (acc, w) {
+      return acc + w;
+    });
+
+    var num = HelperUtil.randInRange(0, weights_total);
+    var prev = 0;
+
+    for (i = 0; i < array.length; i++) {
+      var el = array[i];
+      if (HelperUtil.between(num, prev, weights[i])) {
+        return el;
+      }
+
+      prev = weights[i];
+    }
+
+    return null;
+  },
+
   // gradient for testing
   // make sure to bind self.animating (or false)
   getGradient: function (animating, ctx, hex, row, col, maxRow, maxCol) {

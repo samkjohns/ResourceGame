@@ -4,16 +4,6 @@ var HexGrid = require('./HexGrid.js'),
     breadthFirstPath = require('../util/PathFinder.js'),
     helpers = require('./helpers.js');
 
-function distance(p1, p2) {
-  var xDiff = p1[0] - p2[0];
-  var yDiff = p1[1] - p2[1];
-
-  var xSquare = xDiff * xDiff;
-  var ySquare = yDiff * yDiff;
-
-  return Math.sqrt(xSquare + ySquare);
-}
-
 function randomType() {
   var typeIdx = helpers.randInRange(0, Types.all.length);
   return Types.all[typeIdx];
@@ -22,7 +12,7 @@ function randomType() {
 function validPlacement(point, others, min, max) {
   for (var i = 0; i < others.length; i++) {
     var other = others[i];
-    var d = distance(point, other);
+    var d = helpers.distance(point, other);
     if (!helpers.between(d, min, max)) {
       return false;
     }
@@ -59,7 +49,7 @@ function distancesFromOrigin(point, origins) {
   return origins.map(function (origin) {
     return {
       origin: origin,
-      distance: distance(point, origin.point),
+      distance: helpers.distance(point, origin.point),
       type: origin.type
     };
   });
@@ -74,7 +64,8 @@ function placeBorderMountains(grid) {
     var borderZone = null;
     var origin = null;
     var isBorder = neighbors.some(function (neighbor) {
-      if (neighbor._zone !== tile._zone) {
+      var neitherWater = neighbor.type !== 'water' && tile.type !== 'water';
+      if (neitherWater && neighbor._zone !== tile._zone) {
         borderZone = neighbor._zone;
         origin = tile._zone;
         return true;
@@ -154,6 +145,7 @@ function generateVoronoi(rows, cols, nPlayers) {
   );
 
   var origins = getOrigins(grid, nZones, minDistance, maxDistance);
+  var zones = {};
 
   grid.forEach(function (hex, i, j) {
     var distances = distancesFromOrigin([i, j], origins).sort(
@@ -163,15 +155,23 @@ function generateVoronoi(rows, cols, nPlayers) {
         return 0;
       }
     );
+
+    var origin = distances[0].origin;
     hex.type = distances[0].type;
-    hex._zone = distances[0].origin;
+    hex._zone = origin;
+
+    var zoneJSON = JSON.stringify(origin);
+    var hexJSON = JSON.stringify([i, j]);
+    zones[zoneJSON] = zones[zoneJSON] || {};
+    zones[zoneJSON][hexJSON] = true;
   });
 
   placeBorderMountains(grid);
 
   return {
     grid: grid,
-    zones: origins
+    zones: zones,
+    origins: origins
   };
 }
 

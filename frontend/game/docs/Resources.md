@@ -14,7 +14,7 @@
 | Plains | H    | M    | 0   | L    | 0    |
 | Tundra | L    | L    | L   | M    | L    |
 | Snow   | 0    | L    | L   | L    | M    |
-| Woods  | L    | M    | 0   | H    | 0    |
+| Forest | L    | M    | 0   | H    | 0    |
 | Swamp  | L    | L    | 0   | M    | L    |
 | Jungle | M    | L    | 0   | M    | 0    |
 | Desert | 0    | M    | L   | 0    | H    |
@@ -32,7 +32,7 @@ All types require Food.
 | Magic     | Salt, Gold      |
 | Plant     | Wood            |
 | Air       | Ore, Wood, Gold |
-| Lightning | Gold            |
+| Storm     | Gold            |
 
 ## Mines
 

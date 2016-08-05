@@ -87,19 +87,7 @@ Settlement.prototype.weightedRandomPopulation = function () {
   }
 
 
-  var num = helpers.randInRange(0, running_sum);
-  var prev = 0;
-
-  for (i = 0; i < populations.length; i++) {
-    var population = populations[i];
-    if (helpers.between(num, prev, weights[i])) {
-      return populations[i];
-    }
-
-    prev = weights[i];
-  }
-
-  return "";
+  return helpers.weightedRandomChoice(populations, weights) || "";
 };
 
 Settlement.prototype.grow = function () {
