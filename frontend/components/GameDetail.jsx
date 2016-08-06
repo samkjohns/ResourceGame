@@ -26,20 +26,22 @@ var GameDetail = module.exports = React.createClass({
       var sString = settlement ? settlement.toString() : 'None';
       contents = (
         <table>
-          <tr>
-            <td>Coordinates:</td>
-            <td>{this.state.focus.row}, {this.state.focus.col}</td>
-          </tr>
+          <tbody>
+            <tr>
+              <td>Coordinates:</td>
+              <td>{this.state.focus.row}, {this.state.focus.col}</td>
+            </tr>
 
-          <tr>
-            <td>Creature:</td>
-            <td>{this.state.focus.creature || 'None'}</td>
-          </tr>
+            <tr>
+              <td>Creature:</td>
+              <td>{this.state.focus.creature || 'None'}</td>
+            </tr>
 
-          <tr>
-            <td>Settlement:</td>
-            <td>{sString}</td>
-          </tr>
+            <tr>
+              <td>Settlement:</td>
+              <td>{sString}</td>
+            </tr>
+          </tbody>
         </table>
       );
     }
