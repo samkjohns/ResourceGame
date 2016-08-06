@@ -32,9 +32,10 @@ var HelperUtil = module.exports = {
     return val >= min && val < max;
   },
 
-  randInRange: function (min, max) {
+  randInRange: function (min, max, floatFlag) {
     var difference = Math.abs(max - min);
-    var randOffset = Math.floor(Math.random() * difference);
+    var randFloatOffset = Math.random() * difference;
+    var randOffset = floatFlag ? randFloatOffset : Math.floor(randFloatOffset);
     return randOffset + min;
   },
 
@@ -53,7 +54,7 @@ var HelperUtil = module.exports = {
       return acc + w;
     });
 
-    var num = HelperUtil.randInRange(0, weights_total);
+    var num = HelperUtil.randInRange(0, weights_total, true);
     var prev = 0;
 
     for (i = 0; i < array.length; i++) {

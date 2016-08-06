@@ -9,7 +9,7 @@ function receiveDetailFocus(focus) {
   detail = focus;
 }
 
-function detailFocus() {
+DetailStore.detailFocus = function() {
   return detail;
 }
 
@@ -21,3 +21,5 @@ DetailStore.__onDispatch = function (payload) {
       break;
   }
 };
+
+module.exports = DetailStore;

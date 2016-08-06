@@ -20,12 +20,16 @@ function Settlement(location, populations) {
   this.total_population = Object.keys(populations).reduce(
     function (sum, type) {
       return sum + populations[type];
-    }
+    }, 0
   );
 
   this.resources = {};
   this.countResources();
 }
+
+Settlement.prototype.toString = function () {
+  return `Settlement with ${this.total_population} total population`;
+};
 
 Settlement.prototype.inTerritory = function (point) {
   var row = point[0], col = point[1];

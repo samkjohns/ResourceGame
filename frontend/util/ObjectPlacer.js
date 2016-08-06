@@ -18,9 +18,7 @@ function validPlacement(chosenTiles, tileJSON, minDistance) {
   return !tooClose;
 }
 
-function placeObjects(gameMap, zones, makeSettlement) {
-  console.log('placing objects');
-
+function placeSettlements(gameMap, zones, makeSettlement) {
   // place settlements, 1 per 50 tiles in a zone
   Object.keys(zones).forEach(function (originJSON) {
     var tilesInZone = Object.keys(zones[originJSON]);
@@ -34,8 +32,6 @@ function placeObjects(gameMap, zones, makeSettlement) {
       var tileJSON = tilesInZone[randIdx];
       var minDistance = (numSettlements - 1) * 3;
 
-      // debugger
-
       if (validPlacement(chosenTiles, tileJSON, minDistance)) {
         chosenTiles.push(tileJSON);
       }
@@ -45,7 +41,11 @@ function placeObjects(gameMap, zones, makeSettlement) {
       var chosen = JSON.parse(chosenJSON);
       makeSettlement(gameMap, chosen);
     });
-  })
+  });
+}
+
+function placeObjects(gameMap, zones, makeSettlement) {
+  placeSettlements(gameMap, zones, makeSettlement);
 }
 
 module.exports = placeObjects;

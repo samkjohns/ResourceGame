@@ -9,8 +9,6 @@ var Settlement = require('./Settlement'),
 function Game(ctx) {
   this.ctx = ctx;
 
-  console.log('making game');
-  // var gResult = generateMap(70, 70, 4);
   var gResult = VoronoiGenerator(70, 70, 4);
   this.map = new GameMap(gResult.grid);
   this.nav = new NavMap(this.map);
@@ -52,22 +50,19 @@ function makeSettlement(gameMap, point) {
 
   if (tile.type !== 'mountain' && tile.type !== 'water') {
     var rates = Types.occurrenceRates[tile.type];
-    // console.log(tile.type);
-    // console.log(rates);
     var creatureTypes = Object.keys(rates);
     var total = 0;
-    var weights = creatureTypes.map(
-      function (creatureType) {
-        var weight = rates[creatureType];
-        total += weight;
-        return weight;
-      }
-    );
+    var weights = creatureTypes.map(function (creatureType) {
+      var weight = rates[creatureType];
+      total += weight;
+      return total;
+    });
 
     while (total_population < 100) {
       var creatureChoice = helpers.weightedRandomChoice(
         creatureTypes, weights, total
       );
+      // console.log(creatureChoice);
       populations[creatureChoice] = populations[creatureChoice] || 0;
       populations[creatureChoice]++;
       total_population++;
@@ -91,5 +86,8 @@ function makeSettlement(gameMap, point) {
 // var zone = JSON.parse(zones[0]);
 // // console.log(zone);
 // var settlement = makeSettlement(map, zone.point);
+
+// var game = new Game();
+// var settlement = makeSettlement(game.map, [0, 0]);
 
 module.exports = Game;
