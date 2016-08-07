@@ -41,104 +41,437 @@ var constants = {
     'storm'
   ],
 
-  occurrenceRates: {
+  physical: [
+    'beast',
+    'bird',
+    'humanoid',
+    'energy'
+  ],
+
+  occurrenceRates: { // all should add up to 30 (except water)
     water: {
-      water: 0,
-      earth: 0,
-      fire: 0,
-      magic: 0,
-      plant: 0,
-      air: 0,
-      storm: 0
+      water: {
+        beast: 0,
+        bird: 0,
+        humanoid: 0,
+        energy: 0
+      },
+      earth: {
+        beast: 0,
+        bird: 0,
+        humanoid: 0,
+        energy: 0
+      },
+      fire: {
+        beast: 0,
+        bird: 0,
+        humanoid: 0,
+        energy: 0
+      },
+      magic: {
+        beast: 0,
+        bird: 0,
+        humanoid: 0,
+        energy: 0
+      },
+      plant: {
+        beast: 0,
+        bird: 0,
+        humanoid: 0,
+        energy: 0
+      },
+      air: {
+        beast: 0,
+        bird: 0,
+        humanoid: 0,
+        energy: 0
+      },
+      storm: {
+        beast: 0,
+        bird: 0,
+        humanoid: 0,
+        energy: 0
+      }
     },
 
-    grass: {
-      water: .3,
-      earth: .3,
-      fire: .1,
-      magic: .02,
-      plant: .2,
-      air: .04,
-      storm: .04
+    grass: { // 30
+      water: { // 7.5
+        beast: 3,
+        bird: 3,
+        humanoid: .5,
+        energy: 1
+      },
+
+      earth: { // 8.1
+        beast: 4.1,
+        bird: 2,
+        humanoid: 1.5,
+        energy: 1.5
+      },
+
+      fire: { // 2.2
+        beast: .1,
+        bird: 1,
+        humanoid: .1,
+        energy: 1
+      },
+
+      magic: { // 1.3
+        beast: .1,
+        bird: .1,
+        humanoid: .1,
+        energy: 1
+      },
+
+      plant: { // 4.2
+        beast: 2,
+        bird: .5,
+        humanoid: 2,
+        energy: .3
+      },
+
+      air: { // 2.1
+        beast: .5,
+        bird: 1,
+        humanoid: .1,
+        energy: 1
+      },
+
+      storm: { // 1.6
+        beast: .5,
+        bird: 1,
+        humanoid: .5,
+        energy: .5
+      }
     },
 
-    snow: {
-      water: .5,
-      earth: .05,
-      fire: .01,
-      magic: .1,
-      plant: .01,
-      air: .3,
-      storm: .03
+    snow: { // 30
+      water: { // 15
+        beast: 4,
+        bird: 4,
+        humanoid: 3,
+        energy: 4
+      },
+
+      earth: { // 2.1
+        beast: 1,
+        bird: .5,
+        humanoid: .5,
+        energy: .1
+      },
+
+      fire: { // .1
+        beast: 0,
+        bird: 0,
+        humanoid: 0,
+        energy: .1
+      },
+
+      magic: { // 3.5
+        beast: 1,
+        bird: 1,
+        humanoid: .5,
+        energy: 1
+      },
+
+      plant: { // 1.7
+        beast: 1,
+        bird: .1,
+        humanoid: .5,
+        energy: .1
+      },
+
+      air: { // 6
+        beast: 1,
+        bird: 2,
+        humanoid: 2,
+        energy: 1
+      },
+
+      storm: { // 1.6
+        beast: .1,
+        bird: .5,
+        humanoid: .5,
+        energy: .5
+      }
     },
 
-    plains: {
-      water: .05,
-      earth: .3,
-      fire: .4,
-      magic: .02,
-      plant: .15,
-      air: .03,
-      storm: .05
+    plains: { // 29.4
+      water: { // 1.6
+        beast: .5,
+        bird: .5,
+        humanoid: .5,
+        energy: .1
+      },
+
+      earth: { // 8
+        beast: 3,
+        bird: 1,
+        humanoid: 2,
+        energy: 2
+      },
+
+      fire: { // 10
+        beast: 2,
+        bird: 2,
+        humanoid: 2,
+        energy: 4
+      },
+
+      magic: { // 2
+        beast: .5,
+        bird: .5,
+        humanoid: .5,
+        energy: .5
+      },
+
+      plant: { // 2.6
+        beast: .5,
+        bird: .1,
+        humanoid: 1,
+        energy: 1
+      },
+
+      air: { // 3.6
+        beast: .1,
+        bird: 2,
+        humanoid: 1,
+        energy: .5
+      },
+
+      storm: { // 2.1
+        beast: .2,
+        bird: .5,
+        humanoid: .5,
+        energy: 1
+      }
     },
 
     tundra: {
-      water: .01,
-      earth: .3,
-      fire: .01,
-      magic: .2,
-      plant: .01,
-      air: .3,
-      storm: .17
+      water: {
+        beast: .1,
+        bird: .1,
+        humanoid: .1,
+        energy: .1
+      },
+
+      earth: {
+        beast: 3,
+        bird: 2,
+        humanoid: 2,
+        energy: 2
+      },
+
+      fire: {
+        beast: .1,
+        bird: .1,
+        humanoid: .1,
+        energy: .1
+      },
+
+      magic: {
+        beast: .5,
+        bird: .5,
+        humanoid: 1,
+        energy: 1
+      },
+
+      plant: {
+        beast: .5,
+        bird: .1,
+        humanoid: .5,
+        energy: .1
+      },
+
+      air: {
+        beast: 2,
+        bird: 4,
+        humanoid: .5,
+        energy: 2
+      },
+
+      storm: {
+        beast: .5,
+        bird: 2,
+        humanoid: 2,
+        energy: 3
+      }
     },
 
     forest: {
-      water: .2,
-      earth: .2,
-      fire: .03,
-      magic: .05,
-      plant: .5,
-      air: .01,
-      storm: .01
+      water: {
+        beast: .5,
+        bird: 2,
+        humanoid: .5,
+        energy: 1
+      },
+
+      earth: {
+        beast: 3,
+        bird: .5,
+        humanoid: 2,
+        energy: 1
+      },
+
+      fire: {
+        beast: .1,
+        bird: 1,
+        humanoid: .1,
+        energy: .1
+      },
+
+      magic: {
+        beast: .5,
+        bird: .5,
+        humanoid: .5,
+        energy: .5
+      },
+
+      plant: {
+        beast: 4,
+        bird: .5,
+        humanoid: 3,
+        energy: 2
+      },
+
+      air: {
+        beast: 1,
+        bird: 3,
+        humanoid: .5,
+        energy: .5
+      },
+
+      storm: {
+        beast: .1,
+        bird: 1,
+        humanoid: .1,
+        energy: .5
+      }
     },
 
     swamp: {
-      water: .5,
-      earth: .2,
-      fire: .01,
-      magic: .01,
-      plant: .26,
-      air: .01,
-      storm: .01
+      water: {
+        beast: 3,
+        bird: 2,
+        humanoid: 3,
+        energy: 2
+      },
+
+      earth: {
+        beast: 1,
+        bird: .5,
+        humanoid: 2,
+        energy: 1
+      },
+
+      fire: {
+        beast: .2,
+        bird: .1,
+        humanoid: 1,
+        energy: 1
+      },
+
+      magic: {
+        beast: .5,
+        bird: .1,
+        humanoid: .5,
+        energy: .5
+      },
+
+      plant: {
+        beast: 3,
+        bird: 3,
+        humanoid: 3,
+        energy: 1
+      },
+
+      air: {
+        beast: .1,
+        bird: .5,
+        humanoid: .1,
+        energy: .1
+      },
+
+      storm: {
+        beast: .1,
+        bird: .5,
+        humanoid: .1,
+        energy: .1
+      }
     },
 
     desert: {
-      water: .01,
-      earth: .05,
-      fire: .5,
-      magic: .2,
-      plant: .01,
-      air: .03,
-      storm: .2
+      water: {
+        beast: .1,
+        bird: .1,
+        humanoid: .1,
+        energy: .1
+      },
+
+      earth: {
+        beast: 2,
+        bird: .1,
+        humanoid: .5,
+        energy: 1
+      },
+
+      fire: {
+        beast: 4,
+        bird: 4,
+        humanoid: 2,
+        energy: 3
+      },
+
+      magic: {
+        beast: .1,
+        bird: .5,
+        humanoid: .5,
+        energy: 1
+      },
+
+      plant: {
+        beast: .1,
+        bird: .1,
+        humanoid: .1,
+        energy: .1
+      },
+
+      air: {
+        beast: 1,
+        bird: 2,
+        humanoid: .5,
+        energy: 1
+      },
+
+      storm: {
+        beast: 1,
+        bird: 2,
+        humanoid: 2,
+        energy: 1
+      }
     }
   }
 
 };
 
-/*function tileSum(tile) {
+function tileSum(tile) {
   var rates = constants.occurrenceRates[tile];
   var sum = Object.keys(rates).reduce(
-    function (sum, type) {
-      return sum + rates[type];
+    function (sum, etype) {
+      var eRates = rates[etype];
+      var eRatesSum = Object.keys(eRates).reduce(function (sum, ptype) {
+        return sum + eRates[ptype];
+      }, 0);
+      return sum + eRatesSum;
     }, 0
   );
   // console.log(sum);
   return sum;
 }
 
-constants.all.forEach(function (tileType) {
-  var sum = tileSum(tileType);
-  console.log(`${tileType}: ${sum}`);
-})*/
+// constants.all.forEach(function (tileType) {
+//   var sum = tileSum(tileType);
+//   console.log(`${tileType}: ${sum}`);
+// });
 
 module.exports = constants;

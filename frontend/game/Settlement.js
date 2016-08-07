@@ -1,27 +1,56 @@
 var helpers = require('../util/helpers.js');
+var types = require('../constants/types.js');
 
 // location is an object
 //   grid: HexGrid
 //   tile: tile object
 //   point: [row, col]
-// populations is an object of creature type --> number
-function Settlement(location, populations) {
-  this.image = window.resourceImages.icons.settlement;
+// populations is an object of creature etype --> ptype --> number
+//   water: {
+//    fish: 10,
+//    beast: 2,
+//    bird: 1
+//  },
+//  earth: {
+//    energy: 5,
+//    humanoid: 10
+//  }
+//  ...
+
+function Settlement(location, nPop) {
+  // this.image = window.resourceImages.icons.settlement;
 
   this.location = location;
   this.territory = [];
   this.territorySet = {};
 
-  location.grid
-    .neighborCoords(location.point[0], location.point[1])
-    .forEach(this.addToTerritory.bind(this));
+  // location.grid
+  //   .neighborCoords(location.point[0], location.point[1])
+  //   .forEach(this.addToTerritory.bind(this));
 
-  this.population_counts = populations;
-  this.total_population = Object.keys(populations).reduce(
-    function (sum, type) {
-      return sum + populations[type];
-    }, 0
-  );
+  // this.population_counts = populations;
+  // this.total_population = Object.keys(populations).reduce(
+    // function (sum, type) {
+      // return sum + populations[type];
+    // }, 0
+  // );
+
+  this.weights = types.occurrenceRates[location.tile.type];
+  var populations = {};
+  this.total_population = 0;
+  nPop = nPop || 100;
+  for (let i = 0; i < nPop; i++) {
+    let c = this.weightedRandomPopulation();
+
+    populations[c.elemental] = populations[c.elemental] || {population: 0};
+    let elemPop = populations[c.elemental];
+    elemPop[c.physical] = elemPop[c.physical] || 0;
+
+    elemPop[c.physical]++;
+    elemPop.population++;
+    this.total_population++;
+  }
+  this.populations = populations;
 
   this.resources = {};
   this.countResources();
@@ -79,19 +108,49 @@ Settlement.prototype.growthRate = function () {
   return (3 * foodCount * saltMult) / this.total_population;
 };
 
-Settlement.prototype.weightedRandomPopulation = function () {
-  var weights = [];
-  var running_sum = 0;
-  var populations = Object.keys(this.population_counts);
+function chooseElemType(rates) {
+  var eWeights = [];
+  var runningSum = 0;
+  var eTypes = types.creatures;
+  var pTypes = types.physical;
 
-  for (var i = 0; i < populations.length; i++) {
-    var population = populations[i];
-    running_sum += this.population_counts[population];
-    weights[i] = running_sum;
+  for (let i = 0; i < eTypes.length; i++) {
+    var eType = eTypes[i];
+    var pRates = rates[eType];
+    var pTotal = pTypes.reduce(function (sum, ptype) {
+      return sum + pRates[ptype];
+    }, 0);
+    runningSum += pTotal;
+    eWeights[i] = runningSum;
   }
 
+  return helpers.weightedRandomChoice(eTypes, eWeights, 30);
+}
 
-  return helpers.weightedRandomChoice(populations, weights) || "";
+function choosePhysType(rates, elemType) {
+  var pWeights = [];
+  var pRates = rates[elemType];
+  var runningSum = 0;
+  var pTypes = types.physical;
+
+
+  for (let i = 0; i < pTypes.length; i++) {
+    var pType = pTypes[i];
+    runningSum += pRates[pType];
+    pWeights[i] = runningSum;
+  }
+
+  return helpers.weightedRandomChoice(pTypes, pWeights, runningSum);
+}
+
+Settlement.prototype.weightedRandomPopulation = function () {
+  var eType = chooseElemType(this.weights);
+  var pType = choosePhysType(this.weights, eType);
+
+  return {
+    elemental: eType,
+    physical: pType
+  };
 };
 
 Settlement.prototype.grow = function () {
@@ -104,5 +163,40 @@ Settlement.prototype.grow = function () {
 
   this.total_population += gNum;
 };
+
+Settlement.prototype.recruitableCreatures = function () {
+  var self = this;
+  var eTypes = types.creatures;
+  var pTypes = types.physical;
+  var creatures = [];
+  // all creatures whose (identical) pops are over 10
+  for (let i = 0; i < eTypes.length; i++) {
+    let etype = eTypes[i];
+    let elemPop = this.populations[etype];
+    if (elemPop.population >= 10) {
+      for (let j = 0; j < pTypes.length; j++) {
+        let ptype = pTypes[j];
+        let pop = elemPop[ptype];
+        if (pop >= 10) {
+          creatures.push({
+            elemental: etype,
+            physical: ptype,
+            num: pop - 9
+          });
+        }
+      }
+    }
+  }
+
+  return creatures;
+};
+
+var s = new Settlement({
+  tile: {type: 'swamp'},
+  point: [0, 0],
+  grid: null
+});
+console.log(s);
+console.log(s.recruitableCreatures());
 
 module.exports = Settlement;
