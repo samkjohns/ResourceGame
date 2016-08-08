@@ -32,6 +32,15 @@ var HelperUtil = module.exports = {
     return val >= min && val < max;
   },
 
+  capitalize: function (str) {
+    if (!str) return str;
+    if (str.length === 1) return str.toUpperCase();
+
+    var capital = str[0].toUpperCase();
+    var rest = str.substr(1);
+    return `${capital}${rest}`;
+  },
+
   randInRange: function (min, max, floatFlag) {
     var difference = Math.abs(max - min);
     var randFloatOffset = Math.random() * difference;
@@ -49,12 +58,19 @@ var HelperUtil = module.exports = {
     return Math.sqrt(xSquare + ySquare);
   },
 
+  pushAll: function (array, toAdd) {
+    toAdd.forEach(function (el) {
+      array.push(el);
+    });
+  },
+
   weightedRandomChoice: function (array, weights, total) {
     var weights_total = total || weights.reduce(function (acc, w) {
       return acc + w;
-    });
+    }, 0);
 
     var num = HelperUtil.randInRange(0, weights_total, true);
+    // console.log(`chose ${num} (max ${weights_total})`);
     var prev = 0;
 
     for (i = 0; i < array.length; i++) {
@@ -67,6 +83,15 @@ var HelperUtil = module.exports = {
     }
 
     return null;
+  },
+
+  rawWeightedRandomChoice: function (array, rawWeights) {
+    var runningSum = 0;
+    var weights = rawWeights.map(function (rw) {
+      runningSum += rw;
+      return runningSum;
+    });
+    return HelperUtil.weightedRandomChoice(array, weights, runningSum);
   },
 
   // gradient for testing

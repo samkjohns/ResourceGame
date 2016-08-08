@@ -48,6 +48,20 @@ var constants = {
     'energy'
   ],
 
+  statBoosts: {
+    water: {constitution: 1, speed: 1},
+    earth: {constitution: 2, strength: 1},
+    fire: {dexterity: 2, speed: 1},
+    magic: {intelligence: 3},
+    plant: {constitution: 2},
+    air: {dexterity: 2, speed: 2},
+    storm: {speed: 3, dexterity: 3},
+    beast: {strength: 2, constitution: 1},
+    bird: {speed: 1, dexterity: 1},
+    humanoid: {intelligence: 2, dexterity: 1},
+    energy: {intelligence: 1}
+  },
+
   occurrenceRates: { // all should add up to 30 (except water)
     water: {
       water: {

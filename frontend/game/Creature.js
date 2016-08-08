@@ -1,4 +1,6 @@
-var helpers = require('../util/helpers');
+var helpers = require('../util/helpers.js');
+var types = require('../constants/types.js');
+var CreatureType = require('./CreatureType.js');
 
 var defaultStats = {
   level: 1,
@@ -14,13 +16,14 @@ var defaultStats = {
 const STATS = ['strength', 'constitution', 'dexterity', 'intelligence', 'speed'];
 const ATTS = ['level', 'experience'];
 
-function Creature (physType, elemType, baseStats, moves, image) {
+function Creature (ctype, baseStats, moves, image) {
   var self = this;
   moves = moves || {};
   baseStats = baseStats || {};
 
-  this.physType = physType;
-  this.elemType = elemType;
+  // this.physType = physType;
+  // this.elemType = elemType;
+  this.type = ctype;
   this.moves = moves;
   this.base = {};
 
@@ -35,6 +38,31 @@ function Creature (physType, elemType, baseStats, moves, image) {
   this._calculateHP();
   this.image = image;
 }
+
+function randomStats(ctype) {
+  var ptype = ctype.physical;
+  var etypes = ctype.elemental;
+  var stats = {level: 1, experience: 0};
+
+  STATS.forEach(function (stat) {
+    let sVal = helpers.randInRange(6, 14) + ctype.boostFor(stat);
+    stats[stat] = sVal;
+  });
+
+  return stats;
+}
+
+Creature.generateCreature = function (ctype) {
+  var stats = randomStats(ctype);
+  return new Creature(ctype, stats);
+};
+
+Creature.generate = function (ctype, num) {
+  // return an array of generated creatures at level 1
+  return [...Array(num).keys()].map(function () {
+    return Creature.generateCreature(ctype);
+  });
+};
 
 Creature.prototype._calculateHP = function () {
   this.maxHP = (this.constitution + 1) * this.level + 5;
@@ -109,14 +137,4 @@ Creature.prototype.stats = function () {
 };
 
 // window.Creature = Creature;
-// module.exports = Creature;
-
-var c = new Creature('beast', 'fire', { strength: 12 });
-console.log(`level ${c.level}, ${c.experience} XP`);
-console.log(c.stats());
-c.addExperience(100);
-console.log(`level ${c.level}, ${c.experience} XP`);
-console.log(c.stats());
-c.addExperience(300);
-console.log(`level ${c.level}, ${c.experience} XP`);
-console.log(c.stats());
+module.exports = Creature;
