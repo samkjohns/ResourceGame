@@ -7,22 +7,11 @@ var Creature = require('./Creature.js');
 //   grid: HexGrid
 //   tile: tile object
 //   point: [row, col]
-// populations is an object of creature etype --> ptype --> number
-//   water: {
-//    fish: 10,
-//    beast: 2,
-//    bird: 1
-//  },
-//  earth: {
-//    energy: 5,
-//    humanoid: 10
-//  }
-//  ...
 
 // store each population as a Creature, but each one represents 100
 // population grows when city collects enough food (as in Civ)
 function Settlement(location, nPop) {
-  // this.image = window.resourceImages.icons.settlement;
+  window && (this.image = window.resourceImages.icons.settlement);
   this.location = location;
   this.tileType = location.tile.type;
 
@@ -30,11 +19,12 @@ function Settlement(location, nPop) {
   this.territorySet = {};
 
   // commented out for testing
-  // location.grid
-  //   .neighborCoords(location.point[0], location.point[1])
-  //   .forEach(this.addToTerritory.bind(this));
+  location.grid && (
+  location.grid
+    .neighborCoords(location.point[0], location.point[1])
+    .forEach(this.addToTerritory.bind(this))
+  );
 
-  // add random creatures nPop times
   this.inhabitants = [];
   this.demographics = {
     elemental: {
@@ -45,8 +35,9 @@ function Settlement(location, nPop) {
       beast: 0, bird: 0, humanoid: 0, energy: 0
     }
   };
-  this.hybridRate = 1;
+  this.hybridRate = 1; // controls frequency of hybrids
 
+  // add random creatures nPop times
   for (var i = 0; i < nPop; i++) {
     var ct = this.generateRandomSeed();
     this.inhabitants.push(ct);
@@ -61,6 +52,7 @@ function Settlement(location, nPop) {
 
   this.resources = {};
   this.countResources();
+  this.growth = 0; // when this hits certain threshholds, population grows
 }
 
 /* ---------- THE FACTORY ---------- */
@@ -76,7 +68,8 @@ Settlement.prototype.generateRandomSeed = function () {
   return new CreatureType(etypes, ptype);
 };
 
-// generates a random creature based on demographics
+// generates a random creaturetype based on demographics
+// will be used for adding to inhabitants and for generating a recruitable creature
 Settlement.prototype.generateRandomCreature = function () {
   var self = this;
 
@@ -94,9 +87,6 @@ Settlement.prototype.generateRandomCreature = function () {
       return self.demographics.elemental[etype];
     });
 
-    // console.log(`remaining:`);
-    // console.log(remaining);
-    // console.log(eWeights);
     let etype = helpers.rawWeightedRandomChoice(remaining, eWeights);
     etypes[etype] = etypes[etype] || 0;
 
@@ -121,8 +111,8 @@ Settlement.prototype.generateRandomCreature = function () {
     remaining.splice(eIdx, 1);
   }
 
-  var type = new CreatureType(etypes, ptype);
-  return Creature.generateCreature(type);
+  return new CreatureType(etypes, ptype);
+  // return Creature.generateCreature(type);
 };
 
 /* ---------- GAME MECHANICS ---------- */
@@ -142,6 +132,43 @@ Settlement.prototype.addToTerritory = function (point) {
     this.territory.push(point);
 
     this.location.tile.territoryOf = this;
+  }
+};
+
+Settlement.prototype.goldRate = function () {
+  return Math.floor(Math.pow(this.totalPopulation(), 1.3) * 10);
+};
+
+// determines how much to add to this.growth
+Settlement.prototype.growthRate = function () {
+  const saltK = .1;
+  var foodCount = this.resources.food || 0;
+  var saltCount = this.resources.salt || 0;
+
+  var saltMult = 1 + (saltK * saltCount);
+
+  return Math.floor((3 * foodCount * saltMult) / this.totalPopulation());
+};
+
+Settlement.prototype.nextGrowthThreshhold = function () {
+  return this.totalPopulation() * 2;
+};
+
+Settlement.prototype.grow = function () {
+  this.growth += this.growthRate();
+
+  const threshhold = this.nextGrowthThreshhold();
+  if (this.growth >= threshhold) {
+    var ct = this.generateRandomCreature();
+
+    this.inhabitants.push(ct);
+    this.demographics.physical[ct.physical]++;
+    Object.keys(ct.elemental).forEach(function (etype) {
+      let mag = ct.typePercent(etype);
+      if (mag >= .3) this.demographics.elemental[etype]++;
+    }.bind(this));
+
+    this.growth -= threshhold;
   }
 };
 
@@ -176,6 +203,20 @@ Settlement.prototype.countResources = function () {
 };
 
 /* ---------- HELPER FUNCTIONS ---------- */
+
+Settlement.prototype.toString = function () {
+  var self = this;
+  var s = `Population: ${this.totalPopulation()}\n`;
+  s += '\nDemographics:\n';
+  types.physical.forEach(function (ptype) {
+    s += `\t${ptype}:\t${self.percentOf(ptype) * 100}%\n`;
+  });
+  s += "\n";
+  types.creatures.forEach(function (etype) {
+    s += `\t${etype}:\t${self.percentOf(etype) * 100}%\n`;
+  });
+  return s;
+};
 
 function chooseElemType(rates) {
   var eWeights = [];
@@ -240,31 +281,6 @@ function generateTypeShare(percent) {
 module.exports = Settlement;
 
 /*
-
-Settlement.prototype.goldRate = function () {
-  return this.total_population;
-};
-
-Settlement.prototype.growthRate = function () {
-  const saltK = 1.5;
-  var foodCount = this.resources.food || 0;
-  var saltCount = this.resources.salt || 0;
-
-  var saltMult = 1 + (saltK * saltCount);
-
-  return (3 * foodCount * saltMult) / this.total_population;
-};
-
-Settlement.prototype.grow = function () {
-  var gNum = this.growthRate();
-
-  for (var i = 0; i < gNum; i++) {
-    var pop = this.weightedRandomPopulation();
-    this.population_counts[pop]++;
-  }
-
-  this.total_population += gNum;
-};
 
 Settlement.prototype.getHybrid = function () {
 

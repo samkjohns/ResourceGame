@@ -45,35 +45,12 @@ Game.prototype.handleKey = function (evnt) {
 function makeSettlement(gameMap, point) {
   var tile = gameMap.hexGameMap.valueAt(point);
 
-  var total_population = 0;
-  var populations = {};
-
   if (tile.type !== 'mountain' && tile.type !== 'water') {
-    var rates = Types.occurrenceRates[tile.type];
-    var creatureTypes = Object.keys(rates);
-    var total = 0;
-    var weights = creatureTypes.map(function (creatureType) {
-      var weight = rates[creatureType];
-      total += weight;
-      return total;
-    });
-
-    while (total_population < 100) {
-      var creatureChoice = helpers.weightedRandomChoice(
-        creatureTypes, weights, total
-      );
-      // console.log(creatureChoice);
-      populations[creatureChoice] = populations[creatureChoice] || 0;
-      populations[creatureChoice]++;
-      total_population++;
-    }
-
-    // console.log(`settlement placed at ${point}`);
     tile.settlement = new Settlement({
       grid: gameMap.hexGameMap,
       tile: tile,
       point: point
-    }, populations);
+    }, 10);
   }
 
 };
