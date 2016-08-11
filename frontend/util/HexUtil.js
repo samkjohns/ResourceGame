@@ -60,43 +60,46 @@ var HexUtil = {
         size[0], size[1]
       );
 
-      // ctx.beginPath();
-      //
-      // HexUtil.moveTo(ctx, west);
-      // HexUtil.lineTo(
-      //   ctx, drawnLines,
-      //   {loc: 'W', point: west},
-      //   {loc: 'NW', point: vertices.NW}
-      // );
-      // HexUtil.lineTo(
-      //   ctx, drawnLines,
-      //   {loc: 'NW', point: vertices.NW},
-      //   {loc: 'NE', point: vertices.NE}
-      // );
-      // HexUtil.lineTo(
-      //   ctx, drawnLines,
-      //   {loc: 'NE', point: vertices.NE},
-      //   {loc: 'E', point: vertices.E}
-      // );
-      // HexUtil.lineTo(
-      //   ctx, drawnLines,
-      //   {loc: 'E', point: vertices.E},
-      //   {loc: 'SE', point: vertices.SE}
-      // );
-      // HexUtil.lineTo(
-      //   ctx, drawnLines,
-      //   {loc: 'SE', point: vertices.SE},
-      //   {loc: 'SW', point: vertices.SW}
-      // );
-      // HexUtil.lineTo(
-      //   ctx, drawnLines,
-      //   {loc: 'SW', point: vertices.SW},
-      //   {loc: 'W', point: vertices.W}
-      // );
+      if (hex.territoryOf || hex.settlement || hex.inPath) {
+        ctx.beginPath();
 
-      // getStyles(ctx, hex, row, col, maxRow, maxCol);
-      // ctx.stroke();
-      // ctx.fill();
+        HexUtil.moveTo(ctx, west);
+        HexUtil.lineTo(
+          ctx, drawnLines,
+          {loc: 'W', point: west},
+          {loc: 'NW', point: vertices.NW}
+        );
+        HexUtil.lineTo(
+          ctx, drawnLines,
+          {loc: 'NW', point: vertices.NW},
+          {loc: 'NE', point: vertices.NE}
+        );
+        HexUtil.lineTo(
+          ctx, drawnLines,
+          {loc: 'NE', point: vertices.NE},
+          {loc: 'E', point: vertices.E}
+        );
+        HexUtil.lineTo(
+          ctx, drawnLines,
+          {loc: 'E', point: vertices.E},
+          {loc: 'SE', point: vertices.SE}
+        );
+        HexUtil.lineTo(
+          ctx, drawnLines,
+          {loc: 'SE', point: vertices.SE},
+          {loc: 'SW', point: vertices.SW}
+        );
+        HexUtil.lineTo(
+          ctx, drawnLines,
+          {loc: 'SW', point: vertices.SW},
+          {loc: 'W', point: vertices.W}
+        );
+
+        // getStyles(ctx, hex, row, col, maxRow, maxCol);
+        // ctx.stroke();
+        ctx.fillStyle = 'rgba(200, 100, 100, .3)';
+        ctx.fill();
+      }
 
       drawnHexes[hexJSON] = true;
     }

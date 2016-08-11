@@ -11,7 +11,11 @@ function Game(ctx) {
 
   var gResult = VoronoiGenerator(70, 70, 4);
   this.map = new GameMap(gResult.grid);
+  this.map.placeCreatureAt(0, 0, {
+    image: window.resourceImages.sprites.darkElemental
+  });
   this.nav = new NavMap(this.map);
+  this.battle = null;
 
   placeObjects(this.map, gResult.zones, makeSettlement);
 

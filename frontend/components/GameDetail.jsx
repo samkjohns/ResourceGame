@@ -1,5 +1,6 @@
 var React = require('react'),
-    DetailStore = require('../stores/DetailStore');
+    DetailStore = require('../stores/DetailStore'),
+    SettlementDetail = require('./SettlementDetail');
 
 var GameDetail = module.exports = React.createClass({
   getInitialState: function () {
@@ -21,34 +22,16 @@ var GameDetail = module.exports = React.createClass({
   render: function () {
     var contents = <div/>;
     if (this.state.focus) {
-      // console.log(this.state.focus);
-      var settlement = this.state.focus.hex.settlement;
-      var sString = settlement ? settlement.toString() : 'None';
-      contents = (
-        <table>
-          <tbody>
-            <tr>
-              <td>Coordinates:</td>
-              <td>{this.state.focus.row}, {this.state.focus.col}</td>
-            </tr>
+      let hex = this.state.focus.hex;
 
-            <tr>
-              <td>Creature:</td>
-              <td>{this.state.focus.creature || 'None'}</td>
-            </tr>
+      if (hex.settlement) {
+        contents = <SettlementDetail settlement={hex.settlement}/>;
 
-            <tr>
-              <td>Settlement:</td>
-              <td>{sString}</td>
-            </tr>
-          </tbody>
-        </table>
-      );
+      } // check for other objects or creatures
     }
 
     return(
-      <div>
-        <label>Game Detail</label>
+      <div className="game-detail">
         {contents}
       </div>
     );

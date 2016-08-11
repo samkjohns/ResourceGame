@@ -62,6 +62,72 @@ var constants = {
     energy: {intelligence: 1}
   },
 
+  resources: {
+    water: {
+      food: 2,
+      gold: 0,
+      ore: 0,
+      wood: 0,
+      salt: 2
+    },
+    grass: {
+      food: 2,
+      gold: 2,
+      ore: 1,
+      wood: 1,
+      salt: 0
+    },
+    plains: {
+      food: 3,
+      gold: 2,
+      ore: 0,
+      wood: 1,
+      salt: 0
+    },
+    tundra: {
+      food: 1,
+      gold: 1,
+      ore: 1,
+      wood: 0,
+      salt: 1
+    },
+    snow: {
+      food: 0,
+      gold: 1,
+      ore: 1,
+      wood: 1,
+      salt: 2
+    },
+    forest: {
+      food: 1,
+      gold: 2,
+      ore: 1,
+      wood: 3,
+      salt: 0
+    },
+    swamp: {
+      food: 1,
+      gold: 1,
+      ore: 0,
+      wood: 2,
+      salt: 1
+    },
+    jungle: {
+      food: 2,
+      gold: 1,
+      ore: 0,
+      wood: 2,
+      salt: 0
+    },
+    desert: {
+      food: 0,
+      gold: 3,
+      ore: 1,
+      wood: 0,
+      salt: 3
+    }
+  },
+
   occurrenceRates: { // all should add up to 30 (except water)
     water: {
       water: {

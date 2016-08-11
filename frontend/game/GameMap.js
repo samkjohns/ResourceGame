@@ -157,29 +157,32 @@ GameMap.prototype.handleClick = function (evnt) {
     10, 10,               // pixel offsets
     this.upper, this.left // row and column offsets
   );
-  // console.log(selection);
   var hexVal = selection.hex;
   if (!hexVal || !hexVal.discovered) { return false; }
 
-  if (this.selection && this.selection.creature) {
+  if (this.selection && this.selection.hex.creature) {
     var selectionClicked = (
       (selection.row === this.selection.row) &&
       (selection.col === this.selection.col)
     );
 
+    var flag = true;
+
+    if (!selectionClicked) {
+      const start = [this.selection.row, this.selection.col];
+      const goal = [selection.row, selection.col];
+      var path = breadthFirstPath(
+        this.hexGameMap, start, goal, GameMap.isObstacle
+      );
+      // console.log(path);
+      this.setSelectedPathTo(path);
+      flag = path && path.length > 0;
+    }
+
     this.selection = selection;
     DetailActions.updateDetail(this.selection);
 
-    if (!selectionClicked) {
-      var path = breadthFirstPath(
-        this.hexGameMap,
-        this.selection.hexCoords,
-        [selection.row, selection.col],
-        GameMap.isObstacle
-      );
-      this.setSelectedPathTo(path);
-      return path && path.length > 0;
-    }
+    return flag;
 
   } else {
     this.selection = selection;

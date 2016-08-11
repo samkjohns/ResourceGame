@@ -77,6 +77,10 @@ Creature.prototype.attack = function (move, otherCreature) {
   otherCreature.currentHP -= move.damage + this.strength;
 };
 
+Creature.prototype.isDead = function () {
+  return this.currentHP <= 0;
+};
+
 // level is the amount of experience you need to get to the *next* level
 // e.g., you need 0 experience to get to level 1 and 100 to get to level 2, so
 // if level === 1, this returns 100

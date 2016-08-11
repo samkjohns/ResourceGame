@@ -17,8 +17,8 @@
 | Forest | L    | M    | 0   | H    | 0    |
 | Swamp  | L    | L    | 0   | M    | L    |
 | Jungle | M    | L    | 0   | M    | 0    |
-| Desert | 0    | M    | L   | 0    | H    |
-| Water  | M    | M    | 0   | 0    | M    |
+| Desert | 0    | H    | L   | 0    | H    |
+| Water  | M    | 0    | 0   | 0    | M    |
 
 ## Type dependencies
 

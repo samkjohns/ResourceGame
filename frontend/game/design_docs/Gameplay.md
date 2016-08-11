@@ -26,9 +26,13 @@ To claim a settlement, a player need only occupy the settlement's tile. If the s
 
 When a player claims a settlement, the previous owner of the settlement loses their previous territory, but the new owner does not immediately gain control of that territory. If the settlement is dependent on the lost tiles' resources, this can trigger population loss.
 
+## Buildings
+
+Settlements can construct one building per week. Buildings improve the town in various ways. See [Buildings](./Buildings.md) for more info.
+
 # Battles
 
-When a creature stack moves onto the same tile as a hostile creature stack, a battle is triggered. Battles take place on a battlefield. Each participating creature has one turn per round, may move according to their speed, and may take one action. 
+When a creature stack moves onto the same tile as a hostile creature stack, a battle is triggered. Battles take place on a battlefield. Each participating creature has one turn per round, may move according to their speed, and may take one action.
 
 # Win condition
 

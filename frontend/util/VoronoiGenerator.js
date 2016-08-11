@@ -159,6 +159,7 @@ function generateVoronoi(rows, cols, nPlayers) {
     var origin = distances[0].origin;
     hex.type = distances[0].type;
     hex._zone = origin;
+    hex.resources = helpers.dupObject(Types.resources[hex.type]);
     hex.discovered = true; // for testing
 
     var zoneJSON = JSON.stringify(origin);

@@ -1,49 +1,13 @@
-function LinkedListQueue() {
-  this.head = null;
-  this.tail = null;
-}
-
-LinkedListQueue.prototype.empty = function () {
-  return !this.head;
-};
-
-LinkedListQueue.prototype.enqueue = function (val) {
-  var node = {
-    val: val,
-    prev: null,
-    next: this.head
-  };
-
-  if (this.head) {
-    this.head.prev = node;
-  } else {
-    this.tail = node;
-  }
-  this.head = node;
-
-  return this.head;
-};
-
-LinkedListQueue.prototype.dequeue = function () {
-  if (this.tail) {
-    var val = this.tail.val;
-
-    if (this.head === this.tail) {
-      this.head = null;
-      this.tail = null;
-    } else {
-      this.tail.prev.next = null;
-      this.tail = this.tail.prev;
-    }
-
-    return val;
-  } return null;
-};
+var Queue = require('./datastructures/LinkedListQueue.js');
+var PriorityQueue = require('./datastructures/PriorityQueue.js');
+var helpers = require('./helpers.js');
+var distance = helpers.distance;
+var debug_log = helpers.debug_log;
 
 // Breadth-first
 function breadthFirstPath(hexGrid, start, goal, isObstacle) {
   // console.log('finding path');
-  var frontier = new LinkedListQueue();
+  var frontier = new Queue();
   frontier.enqueue(start);
   var cameFrom = {};
   var startKey = JSON.stringify(start);
@@ -81,7 +45,6 @@ function breadthFirstPath(hexGrid, start, goal, isObstacle) {
 
 // helper function
 function _reconstructPath(cameFrom, current) {
-  // console.log('found a path');
   var currentKey = JSON.stringify(current);
   var totalPath = [current];
 
@@ -94,27 +57,48 @@ function _reconstructPath(cameFrom, current) {
   return totalPath;
 }
 
-// var HexGrid = require('./HexGrid.js');
-// var grid = new HexGrid(5, 5);
-// for (var i = 0; i < 5; i++) {
-//   for (var j = 0; j < 5; j++) {
-//     grid.setValue([i, j], {occupied: false});
-//   }
-// }
-// grid.valueAt(1, 1).occupied = true;
-// grid.valueAt(1, 2).occupied = true;
-// grid.valueAt(2, 1).occupied = true;
-//
-// var path = breadthFirstPath(grid, [0, 0], [4, 4]);
-// if (path) {
-//   path.forEach(function (coords) {
-//     console.log(coords);
-//   });
-// } else {
-//   console.log("no path");
-// }
+function priorityFirstPath(hexGrid, start, goal, isObstacle) {
+  var frontier = new PriorityQueue(function (point) {
+    const d = distance(point, goal);
+    return 100 / (1 + d);
+  });
 
-module.exports = breadthFirstPath;
+
+  frontier.enqueue(start);
+  var cameFrom = {};
+  var startKey = JSON.stringify(start);
+  var goalKey = JSON.stringify(goal);
+  cameFrom[startKey] = null;
+
+  var current, currentKey;
+  while(!frontier.empty()) {
+    current = frontier.dequeue();
+    currentKey = JSON.stringify(current);
+
+    if (currentKey === goalKey) {
+      return _reconstructPath(cameFrom, current);
+    }
+
+    var neighbors = hexGrid.neighborCoords(current[0], current[1]);
+
+    var neighborKey;
+    neighbors.forEach(function (neighbor) {
+      var tile = hexGrid.valueAt(neighbor);
+
+      var neighborKey = JSON.stringify(neighbor);
+      if(!isObstacle(tile) || neighborKey === goalKey) {
+        if(!cameFrom[neighborKey] && cameFrom[neighborKey] !== null) {
+          frontier.enqueue(neighbor);
+          cameFrom[neighborKey] = current;
+        }
+      }
+    });
+  }
+
+  return null;
+}
+
+module.exports = priorityFirstPath;
 
 /*
 // A*

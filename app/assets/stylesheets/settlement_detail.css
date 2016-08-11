@@ -1,0 +1,33 @@
+.fl {
+  display: block;
+  float: left;
+}
+
+.game-detail {
+  box-sizing: content-box;
+  margin: 10px;
+  padding: 5px;
+  width: 870px;
+  height: 600px;
+}
+
+.settlement-detail-pane > h2 {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.settlement-nav {
+  margin-right: 25px;
+}
+
+.settlement-buttons > button {
+  font-size: 12px;
+  display: block;
+  margin-top: 5px;
+}
+
+.settlement-main-pane {
+  border-left: 1px solid rgba(0, 0, 0, .4);
+  height: 340px;
+  padding: 5px 10px;
+}

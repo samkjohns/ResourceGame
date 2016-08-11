@@ -122,6 +122,7 @@ Settlement.prototype.inTerritory = function (point) {
   if (!this.territorySet[row] || !this.territorySet[row][col]) {
     return false;
   }
+  return true;
 };
 
 Settlement.prototype.addToTerritory = function (point) {
@@ -131,7 +132,9 @@ Settlement.prototype.addToTerritory = function (point) {
     this.territorySet[row][col] = true;
     this.territory.push(point);
 
-    this.location.tile.territoryOf = this;
+    var grid = this.location.grid;
+    var tile = grid.valueAt(row, col);
+    tile.territoryOf = this;
   }
 };
 
@@ -189,16 +192,12 @@ Settlement.prototype.countResources = function () {
   var self = this;
   self.territory.forEach(function (point) {
     var tile = self.location.grid.valueAt(point);
-    var resource = tile.resource;
+    var resources = tile.resources;
 
-    if (resource) {
+    Object.keys(resources).forEach(function (resource) {
       self.resources[resource] = self.resources[resource] || 0;
-      self.resources[resource]++;
-    }
-
-    // all tiles have a food count (min is 0)
-    self.resources.food = self.resources.food || 0;
-    self.resources.food += tile.food;
+      self.resources[resource] += (resources[resource] || 0);
+    });
   });
 };
 

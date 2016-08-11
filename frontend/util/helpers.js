@@ -1,6 +1,14 @@
 var types = require('../constants/types.js');
 
 var HelperUtil = module.exports = {
+  dupObject: function (ob) {
+    var nOb = {};
+    Object.keys(ob).forEach(function (key) {
+      nOb[key] = ob[key];
+    });
+    return nOb;
+  },
+
   objectUnion: function (ob1, ob2) {
     output = {};
 
