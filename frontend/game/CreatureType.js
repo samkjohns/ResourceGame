@@ -1,5 +1,7 @@
 var helpers = require('../util/helpers.js');
 var types = require('../constants/types.js');
+var creatures = require('../constants/creatures.js');
+var ATTRIBUTES = require('../constants/attributes.js');
 
 function CreatureType(etypes, ptype) {
   this.physical = ptype;
@@ -49,6 +51,43 @@ CreatureType.prototype.canBreedWith = function (otherType) {
   return false;
 };
 
+CreatureType.prototype.canBeSpecies = function (speciesName) {
+  const self = this;
+  const stypes = creatures[speciesName].types;
+
+  const physMatch = stypes.physical.some(function (ptype) {
+    return self.isPhysicalType(ptype);
+  });
+
+  if (!physMatch) return false;
+  if (!stypes.elemental) return true;
+
+  const elTypes = Object.keys(stypes.elemental);
+  const elMatch = elTypes.every(function (etype) {
+    return self.typePercent(etype) >= stypes.elemental[etype];
+  });
+
+  return physMatch && elMatch;
+};
+
+CreatureType.prototype.randomSpecies = function () {
+  const allSpecies = Object.keys(creatures);
+  const validSpecies = allSpecies.filter(this.canBeSpecies.bind(this));
+  return helpers.randomChoice(validSpecies);
+};
+
+CreatureType.prototype.randomStats = function () {
+  var ptype = this.physical;
+  var etypes = this.elemental;
+  var stats = {level: 1, experience: 0};
+
+  ATTRIBUTES.stats.forEach(function (stat) {
+    let sVal = helpers.randInRange(6, 14) + this.boostFor(stat);
+    stats[stat] = sVal;
+  }.bind(this));
+
+  return stats;
+};
 
 /*
       1      2     avg
@@ -87,7 +126,6 @@ CreatureType.prototype.boostFor = function (stat) {
   // if (types.physical.indexOf(stat) >= 0) {
   //   return types.statBoosts[this.physical][stat];
   // console.log(this.physical);
-  console.log(types.statBoosts);
   var fromPhysical = types.statBoosts[this.physical][stat] || 0;
 
   var fromElemental = Object.keys(this.elemental).reduce(
@@ -101,14 +139,5 @@ CreatureType.prototype.boostFor = function (stat) {
   return Math.floor(fromPhysical + fromElemental);
 };
 
-// var ct = new CreatureType({
-//   water: .4, earth: .4, plant: .2
-// }, 'beast');
-//
-// console.log(ct);
-//
-// console.log(`boost for strength: ${ct.boostFor('strength')}`);
-// console.log(`boost for constitution: ${ct.boostFor('constitution')}`);
-// console.log(`boost for dexterity: ${ct.boostFor('dexterity')}`);
-
+window.CreatureType = CreatureType;
 module.exports = CreatureType;

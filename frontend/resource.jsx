@@ -12,7 +12,6 @@ var App = React.createClass({
     this.context.clearRect(0, 0, Dimensions.DIM_X, Dimensions.DIM_Y);
 
     this.game = new Game(this.context);
-    // this.battlefield =
     // this.battle = new Battle(
     //   // attackers (array)
     //   // defenders (array)

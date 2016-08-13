@@ -1,5 +1,7 @@
 var helpers = require('../util/helpers.js');
 var types = require('../constants/types.js');
+var ATTRIBUTES = require('../constants/attributes.js');
+var Move = require('./Move.js');
 var CreatureType = require('./CreatureType.js');
 
 var defaultStats = {
@@ -13,48 +15,39 @@ var defaultStats = {
   speed: 10
 };
 
-const STATS = ['strength', 'constitution', 'dexterity', 'intelligence', 'speed'];
-const ATTS = ['level', 'experience'];
-
-function Creature (ctype, baseStats, moves, image) {
+function Creature(species, ctype, baseStats, moves) {
   var self = this;
   moves = moves || {};
   baseStats = baseStats || {};
 
   // this.physType = physType;
   // this.elemType = elemType;
+  this.species = species;
   this.type = ctype;
   this.moves = moves;
   this.base = {};
 
   baseStats = helpers.objectUnion(defaultStats, baseStats);
-  STATS.forEach(function (stat) { self.base[stat] = baseStats[stat]; });
-  // ATTS.forEach(function (att) { self[att] = baseStats[att]; });
+  ATTRIBUTES.stats.forEach(function (stat) { self.base[stat] = baseStats[stat]; });
   this.level = baseStats.level;
   this.experience = baseStats.experience ?
     baseStats.experience : levelThreshhold(this.level - 1);
 
+  this._getImage();
   this._calculateStats();
   this._calculateHP();
-  this.image = image;
-}
-
-function randomStats(ctype) {
-  var ptype = ctype.physical;
-  var etypes = ctype.elemental;
-  var stats = {level: 1, experience: 0};
-
-  STATS.forEach(function (stat) {
-    let sVal = helpers.randInRange(6, 14) + ctype.boostFor(stat);
-    stats[stat] = sVal;
-  });
-
-  return stats;
 }
 
 Creature.generateCreature = function (ctype) {
-  var stats = randomStats(ctype);
-  return new Creature(ctype, stats);
+  var species = ctype.randomSpecies();
+  var stats = ctype.randomStats();
+
+  var creature = new Creature(species, ctype, stats);
+  var knowableMoves = creature.knowableMoves();
+  console.log(knowableMoves);
+  creature.moves = [helpers.randomChoice(knowableMoves)];
+
+  return creature;
 };
 
 Creature.generate = function (ctype, num) {
@@ -67,6 +60,10 @@ Creature.generate = function (ctype, num) {
 Creature.prototype._calculateHP = function () {
   this.maxHP = (this.constitution + 1) * this.level + 5;
   this.currentHP = this.maxHP;
+};
+
+Creature.prototype._getImage = function () {
+  this.image = window.resourceImages.sprites.darkElemental;
 };
 
 Creature.prototype.render = function (context, point) {
@@ -133,11 +130,26 @@ Creature.prototype.levelUp = function () {
 Creature.prototype.stats = function () {
   var stats = {};
 
-  STATS.forEach(function (stat) {
+  ATTRIBUTES.stats.forEach(function (stat) {
     stats[stat] = this[stat];
   }.bind(this));
 
   return stats;
+};
+
+Creature.prototype.canKnowMove = function (move) {
+  if (typeof(move) === 'string') move = new Move(move);
+
+  return (
+    (move.minLevel <= this.level) &&
+    (move.types.indexOf(this.type.physical) >= 0)
+  );
+};
+
+Creature.prototype.knowableMoves = function () {
+  return Move.filter(function (move) {
+    return this.canKnowMove(move);
+  }.bind(this));
 };
 
 // window.Creature = Creature;

@@ -72,6 +72,11 @@ var HelperUtil = module.exports = {
     });
   },
 
+  randomChoice: function (array) {
+    var idx = HelperUtil.randInRange(0, array.length);
+    return array[idx];
+  },
+
   weightedRandomChoice: function (array, weights, total) {
     var weights_total = total || weights.reduce(function (acc, w) {
       return acc + w;

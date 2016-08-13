@@ -15,3 +15,4 @@
 - temporary stat boost
 - a new creature
 - a quest
+- grant an ability

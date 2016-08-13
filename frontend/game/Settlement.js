@@ -10,8 +10,9 @@ var Creature = require('./Creature.js');
 
 // store each population as a Creature, but each one represents 100
 // population grows when city collects enough food (as in Civ)
-function Settlement(location, nPop) {
+function Settlement(player, location, nPop) {
   window && (this.image = window.resourceImages.icons.settlement);
+  this.player = player;
   this.location = location;
   this.tileType = location.tile.type;
 
@@ -49,6 +50,7 @@ function Settlement(location, nPop) {
   }
 
   this.recruitableCreatures = [];
+  this.addRecruitableCreature();
 
   this.resources = {};
   this.countResources();
@@ -113,6 +115,12 @@ Settlement.prototype.generateRandomCreature = function () {
 
   return new CreatureType(etypes, ptype);
   // return Creature.generateCreature(type);
+};
+
+Settlement.prototype.addRecruitableCreature = function () {
+  const creatureType = this.generateRandomCreature();
+  const creature = Creature.generateCreature(creatureType);
+  this.recruitableCreatures.push(creature);
 };
 
 /* ---------- GAME MECHANICS ---------- */

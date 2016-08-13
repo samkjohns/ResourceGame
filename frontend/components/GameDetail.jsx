@@ -25,6 +25,7 @@ var GameDetail = module.exports = React.createClass({
       let hex = this.state.focus.hex;
 
       if (hex.settlement) {
+        window.settlement = hex.settlement;
         contents = <SettlementDetail settlement={hex.settlement}/>;
 
       } // check for other objects or creatures
