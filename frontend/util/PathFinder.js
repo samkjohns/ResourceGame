@@ -57,18 +57,34 @@ function _reconstructPath(cameFrom, current) {
   return totalPath;
 }
 
+function heuristic(point, goal) {
+  const d = distance(point, goal);
+  return 100 / (1 + d);
+}
+
 function priorityFirstPath(hexGrid, start, goal, isObstacle) {
-  var frontier = new PriorityQueue(function (point) {
-    const d = distance(point, goal);
-    return 100 / (1 + d);
-  });
-
-
-  frontier.enqueue(start);
   var cameFrom = {};
   var startKey = JSON.stringify(start);
   var goalKey = JSON.stringify(goal);
   cameFrom[startKey] = null;
+
+  var closedSet = {};
+
+  var gScores = {};
+  gScores[startKey] = 0;
+
+  var fScores = {};
+  fScores[startKey] = heuristic(start, goal);
+
+  // var frontier = new PriorityQueue(function (point) {
+  //   const d = distance(point, goal);
+  //   return 100 / (1 + d);
+  // });
+  var frontier = new PriorityQueue(function (point) {
+    return 100 / (1 + fScores[JSON.stringify(point)]);
+  });
+
+  frontier.enqueue(start);
 
   var current, currentKey;
   while(!frontier.empty()) {
@@ -79,20 +95,30 @@ function priorityFirstPath(hexGrid, start, goal, isObstacle) {
       return _reconstructPath(cameFrom, current);
     }
 
+    closedSet[currentKey] = true;
+
     var neighbors = hexGrid.neighborCoords(current[0], current[1]);
 
     var neighborKey;
-    neighbors.forEach(function (neighbor) {
-      var tile = hexGrid.valueAt(neighbor);
+    for (let i = 0; i < neighbors.length; i++) {
+      let neighbor = neighbors[i];
+      let neighborKey = JSON.stringify(neighbor);
+      if (closedSet[neighborKey]) continue;
 
-      var neighborKey = JSON.stringify(neighbor);
+      let tile = hexGrid.valueAt(neighbor);
+      // debugger
       if(!isObstacle(tile) || neighborKey === goalKey) {
-        if(!cameFrom[neighborKey] && cameFrom[neighborKey] !== null) {
-          frontier.enqueue(neighbor);
-          cameFrom[neighborKey] = current;
-        }
+        let tentativeGScore = gScores[currentKey] + distance(current, neighbor);
+
+        if (gScores[neighborKey] && tentativeGScore >= gScores[neighborKey])
+          continue;
+
+        gScores[neighborKey] = tentativeGScore;
+        fScores[neighborKey] = gScores[neighborKey] + heuristic(neighbor, goal);
+        cameFrom[neighborKey] = current;
+        frontier.enqueue(neighbor);
       }
-    });
+    }
   }
 
   return null;

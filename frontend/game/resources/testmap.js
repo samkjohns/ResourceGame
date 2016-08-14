@@ -8,7 +8,7 @@ for (var i = 0; i < Y_SIZE; i++) {
   for (var j = 0; j < X_SIZE; j++) {
     testMap.setValue(
       [i, j],
-      { type: "grass", object: null, creature: null }
+      { type: "grass", object: null, creature: null, discovered: true }
     );
   }
 }

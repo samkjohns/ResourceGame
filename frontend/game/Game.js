@@ -50,7 +50,7 @@ function makeSettlement(gameMap, point) {
   var tile = gameMap.hexGameMap.valueAt(point);
 
   if (tile.type !== 'mountain' && tile.type !== 'water') {
-    tile.settlement = new Settlement({
+    tile.settlement = new Settlement(null, {
       grid: gameMap.hexGameMap,
       tile: tile,
       point: point
