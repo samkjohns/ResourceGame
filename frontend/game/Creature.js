@@ -44,7 +44,7 @@ Creature.generateCreature = function (ctype) {
 
   var creature = new Creature(species, ctype, stats);
   var knowableMoves = creature.knowableMoves();
-  console.log(knowableMoves);
+  // console.log(knowableMoves);
   creature.moves = [helpers.randomChoice(knowableMoves)];
 
   return creature;

@@ -34,6 +34,23 @@ HexGrid.prototype.inBounds = function (row, col) {
   return row >= 0 && row < this.rows && col >= 0 && col < this.cols;
 };
 
+HexGrid.prototype.onEdge = function (row, col) {
+  var r, c;
+  if (!col) {
+    r = row[0];
+    c = row[1];
+
+  } else {
+    r = row;
+    c = col;
+  }
+
+  var lastR = this.rows - 1;
+  var lastC = this.cols - 1;
+
+  return r === 0 || c === 0 || r === lastR || c === lastC;
+};
+
 var _oddNeighborCoords = {
   NW: [0, -1],
   N: [-1, 0],
@@ -90,6 +107,22 @@ HexGrid.prototype.neighborTiles = function (row, col) {
   });
 
   return tiles;
+};
+
+HexGrid.prototype.areNeighbors = function (v1, v2, v3, v4) {
+  var p1, p2;
+  if (!v3) {
+    p1 = v1;
+    p2 = v2;
+
+  } else {
+    p1 = [v1, v2];
+    p2 = [v3, v4];
+  }
+
+  return this.neighborCoords(p1).some(function (neighbor) {
+    return neighbor[0] === p2[0] && neighbor[1] === p2[1];
+  });
 };
 
 HexGrid.prototype.southWestOf = function (row, col) {

@@ -147,6 +147,8 @@ function generateVoronoi(rows, cols, nPlayers) {
   var origins = getOrigins(grid, nZones, minDistance, maxDistance);
   var zones = {};
 
+  console.log(findBorders(grid, origins));
+
   grid.forEach(function (hex, i, j) {
     var distances = distancesFromOrigin([i, j], origins).sort(
       function (d1, d2) {
@@ -175,6 +177,75 @@ function generateVoronoi(rows, cols, nPlayers) {
     zones: zones,
     origins: origins
   };
+}
+
+//
+/* BELOW IS CODE FOR NEWER METHOD */
+//
+
+function tileIsBorder(grid, i, j) {
+  var tile = grid.valueAt(i, j);
+  var neighbors = grid.neighborTiles(i, j);
+  return neighbors.some(function (neighbor) {
+    return neighbor._zone !== tile._zone;
+  });
+}
+
+function allBorderPoints(grid) {
+  var borderTiles = [];
+  grid.forEach(function (tile, i, j) {
+    if (tileIsBorder(grid, i, j)) {
+      borderTiles.push([i, j]);
+    }
+  });
+
+  return borderTiles;
+}
+
+function fuzzyEquidistance(grid, d1, d2, d3) {
+
+}
+
+function isJoint(grid, origins, i, j, joints) {
+  if (!grid.onEdge(i, j)) {
+    var distances = distancesFromOrigin([i, j], origins).sort(
+      function (d1, d2) {
+        if (d1.distance < d2.distance) return -1;
+        if (d1.distance > d2.distance) return 1;
+        return 0;
+      }
+    );
+
+    var d1 = distances[0].distance;
+    var d2 = distances[1].distance;
+    var d3 = distances[2].distance;
+
+    var diff12 = Math.abs(d1 - d2);
+    var diff13 = Math.abs(d1 - d3);
+    var diff23 = Math.abs(d2 - d3);
+
+    if ((diff12 > 2) || (diff13 > 2) || (diff23 > 2))
+      return false;
+  }
+
+  var neighbors = grid.neighborCoords(i, j);
+  var isRedundant = joints.some(function (joint) {
+    return grid.areNeighbors(joint, [i, j]);
+  });
+
+  return !isRedundant;
+}
+
+// returns an array of edges, represented by two points
+function findBorders(grid, origins) {
+  var joints = [];
+  grid.forEach(function (tile, i, j) {
+    if (isJoint(grid, origins, i, j, joints)) {
+      joints.push([i, j]);
+    }
+  });
+
+  return joints;
 }
 
 module.exports = generateVoronoi;

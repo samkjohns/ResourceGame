@@ -44,7 +44,7 @@ CreatureType.prototype.canBreedWith = function (otherType) {
 
   for (let i = 0; i < this.elemental.length; i++) {
     let etype = this.elemental[i];
-    if (this.typePercent(etype) > .3 && otherType.typePercent(etype) > .3)
+    if (this.typePercent(etype) > 0.3 && otherType.typePercent(etype) > 0.3)
       return true;
   }
 
