@@ -26,12 +26,13 @@ function chooseOrigins(grid, max) {
 // then do Voronoi assigning, but only if a tile is within a certain distance (imperfect)
 // also assign temperature?
 
-function closestOrigin(point, origins) {
-  var distances = origins.map(function (origin) {
+function closestOrigin(point, zones) {
+  var distances = zones.map(function (zone) {
+    var origin = zone.origin;
     var magnitude = helpers.distance(point, origin);
     return {
       magnitude: magnitude,
-      origin: origin
+      zone: zone
     };
   });
 
@@ -45,11 +46,21 @@ function closestOrigin(point, origins) {
 }
 
 function assignTilesToZones(grid, origins) {
-  var zones = origins.slice();
-  grid.forEach(function (tile, i, j) {
-    var closest = closestOrigin([i, j], origins);
-    tile.zone = closest;
+  var zones = origins.map(function (origin) {
+    return {
+      origin: origin,
+      temperature: Math.floor(Math.random() * 100), // placeholder
+      tiles: []
+    };
   });
+
+  grid.forEach(function (tile, i, j) {
+    var closest = closestOrigin([i, j], zones);
+    tile.zone = closest;
+    closest.tiles.push(tile);
+  });
+
+  return zones;
 }
 
 // then do sub-Voronoi within the zones --> assign temperature? or just actual tile types
