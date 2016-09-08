@@ -64,3 +64,10 @@ function assignTilesToZones(grid, origins) {
 }
 
 // then do sub-Voronoi within the zones --> assign temperature? or just actual tile types
+function assignTypesInZone(grid, zone) {
+  
+}
+
+function assignAllZones(grid, zones) {
+  zones.forEach(assignTypesInZone.bind(this, grid));
+}

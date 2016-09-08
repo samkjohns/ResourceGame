@@ -534,6 +534,9 @@ var constants = {
 
 };
 
+
+// a testing function
+// should return 1
 function tileSum(tile) {
   var rates = constants.occurrenceRates[tile];
   var sum = Object.keys(rates).reduce(
@@ -545,7 +548,6 @@ function tileSum(tile) {
       return sum + eRatesSum;
     }, 0
   );
-  // console.log(sum);
   return sum;
 }
 
