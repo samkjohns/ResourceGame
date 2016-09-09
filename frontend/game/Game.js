@@ -4,12 +4,14 @@ var Settlement = require('./Settlement'),
     Types = require('../constants/types.js'),
     helpers = require('../util/helpers.js'),
     VoronoiGenerator = require('../util/VoronoiGenerator.js'),
+    sweepMapGenerator = require('../util/SweepMap'),
     placeObjects = require('../util/ObjectPlacer.js');
 
 function Game(ctx) {
   this.ctx = ctx;
 
-  var gResult = VoronoiGenerator(70, 70, 4);
+  // var gResult = VoronoiGenerator(70, 70, 4);
+  var gResult = sweepMapGenerator(70, 70, 4);
   this.map = new GameMap(gResult.grid);
   this.map.placeCreatureAt(0, 0, {
     image: window.resourceImages.sprites.darkElemental
@@ -17,7 +19,7 @@ function Game(ctx) {
   this.nav = new NavMap(this.map);
   this.battle = null;
 
-  placeObjects(this.map, gResult.zones, makeSettlement);
+  // placeObjects(this.map, gResult.zones, makeSettlement);
 
   this.canvasRender();
 }
@@ -57,7 +59,7 @@ function makeSettlement(gameMap, point) {
     }, 10);
   }
 
-};
+}
 
 // var gResult = VoronoiGenerator(70, 70, 4);
 // // console.log(gResult.grid);
