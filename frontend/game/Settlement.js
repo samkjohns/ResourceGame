@@ -10,11 +10,12 @@ var Creature = require('./Creature.js');
 
 // store each population as a Creature, but each one represents 100
 // population grows when city collects enough food (as in Civ)
-function Settlement(player, location, nPop) {
+function Settlement(player, location, nPop, founder) {
   window && (this.image = window.resourceImages.icons.settlement);
   this.player = player;
   this.location = location;
   this.tileType = location.tile.type;
+  this.founder = founder;
 
   this.territory = [];
   this.territorySet = {};
@@ -38,15 +39,12 @@ function Settlement(player, location, nPop) {
   };
   this.hybridRate = 1; // controls frequency of hybrids
 
+  this.founder && this._recordSeed(founder.ctype);
   // add random creatures nPop times
   for (var i = 0; i < nPop; i++) {
     var ct = this.generateRandomSeed();
     this.inhabitants.push(ct);
-    this.demographics.physical[ct.physical]++;
-    types.creatures.forEach(function (etype) {
-      let pcnt = ct.typePercent(etype);
-      this.demographics.elemental[etype] += pcnt;
-    }.bind(this));
+    this._recordSeed(ct);
   }
 
   this.recruitableCreatures = [];
@@ -58,6 +56,15 @@ function Settlement(player, location, nPop) {
 }
 
 /* ---------- THE FACTORY ---------- */
+
+Settlement.prototype._recordSeed = function (creatureType) {
+  this.inhabitants.push(creatureType);
+  this.demographics.physical[creatureType.physical]++;
+  types.creatures.forEach(function (etype) {
+    let pcnt = creatureType.typePercent(etype);
+    this.demographics.elemental[etype] += pcnt;
+  }.bind(this));
+};
 
 // generates a random creature based on the location
 Settlement.prototype.generateRandomSeed = function () {

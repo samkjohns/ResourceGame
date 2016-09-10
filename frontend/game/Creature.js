@@ -63,7 +63,7 @@ Creature.prototype._calculateHP = function () {
 };
 
 Creature.prototype._getImage = function () {
-  this.image = window.resourceImages.sprites.darkElemental;
+  this.image = this.type._getImage();
 };
 
 Creature.prototype.render = function (context, point) {

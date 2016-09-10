@@ -1,5 +1,12 @@
 var types = require('../constants/types.js');
 
+Function.prototype.extends = function (parentClass) {
+  function Surrogate() {}
+  Surrogate.prototype = parentClass.prototype;
+  this.prototype = new Surrogate();
+  this.superClass = parentClass;
+};
+
 var HelperUtil = module.exports = {
   dupObject: function (ob) {
     var nOb = {};

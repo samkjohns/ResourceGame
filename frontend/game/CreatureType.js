@@ -139,5 +139,10 @@ CreatureType.prototype.boostFor = function (stat) {
   return Math.floor(fromPhysical + fromElemental);
 };
 
+CreatureType.prototype._getImage = function () {
+  return window.resourceImages.sprites[this.species] ||
+         window.resourceImages.sprites.darkElemental; // default
+};
+
 window.CreatureType = CreatureType;
 module.exports = CreatureType;

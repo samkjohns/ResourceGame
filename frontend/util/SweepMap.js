@@ -8,21 +8,22 @@ var temperatures = {
   0.3: [
     'desert',
     'plains',
-    'forest',
-    'swamp'
+    'swamp',
+    'mountain'
   ],
 
   0.8: [
     'plains',
     'grass',
-    'forest'
+    'forest',
+    'mountain'
   ],
 
   1: [
     'tundra',
     'snow',
-    'plains',
-    'forest'
+    'forest',
+    'mountain'
   ]
 };
 
@@ -69,15 +70,13 @@ function closestOrigin(point, zones) {
   });
 
   var closest = distances[0];
-  var reach = 10 + helpers.randInRange(0, 3);
+  var reach = 12 + helpers.randInRange(0, 3); // varying the reach makes coastlines less smooth
   return closest.magnitude < reach ? closest : { zone: null, magnitude: null };
 }
 
 function assignTilesToZones(grid, origins) {
   var zones = origins.map(function (origin) {
     var temp = Math.random();
-    // console.log(`origin: ${origin[0]}, ${origin[1]}
-    //   temperature: ${temp}`);
     return {
       origin: origin,
       temperature: temp, // placeholder
@@ -102,15 +101,12 @@ function assignTypesInZone(grid, zone) {
 
   if (zone.temperature < 0.3) {
     tileSet = temperatures[0.3];
-    console.log(`${zone.temperature}, hot, ${tileSet}`);
 
   } else if (zone.temperature < 0.8) {
     tileSet = temperatures[0.8];
-    console.log(`${zone.temperature}, temperate, ${tileSet}`);
 
   } else {
     tileSet = temperatures[1];
-    console.log(`${zone.temperature}, cold, ${tileSet}`);
   }
 
   zone.tiles.forEach(function (tile) {
@@ -151,6 +147,9 @@ function neighborCounts(grid, i, j) {
   return counts;
 }
 
+// change tiles that are "surrounded" by another type to that type
+// 3 / 6 neighbors counts as surrounded
+// this does not apply to water (should keep islands)
 function consolidateTiles(grid) {
   var switches = new GridMap();
 
@@ -168,20 +167,15 @@ function consolidateTiles(grid) {
 
       var highestType = sorted[0];
 
-      // A tile should be switched if it is bordered by at least 3 tiles of
-      // the same type.
       if (tile.type !== highestType && counts[highestType] >= 3) {
         switches.set(i, j, highestType);
       }
     }
   });
 
-  // console.log(switches.map);
-
   // Then loop over the map and switch the types
   switches.forEach(function (type, i, j) {
     var tile = grid.valueAt(i, j);
-    console.log(`${tile.type} --> ${type}`);
     tile.type = type;
   });
 }
@@ -189,7 +183,7 @@ function consolidateTiles(grid) {
 // main function
 function sweepMapGenerator(rows, cols, nPlayers) {
   var grid = new HexGrid(rows, cols);
-  var nZones = (nPlayers * 2) + helpers.randInRange(3, 5);
+  var nZones = 2 + (nPlayers * 2) + helpers.randInRange(3, 5);
 
   placeWater(grid);
   var origins = chooseOrigins(grid, nZones);

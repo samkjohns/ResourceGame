@@ -7,22 +7,81 @@ var Settlement = require('./Settlement'),
     sweepMapGenerator = require('../util/SweepMap'),
     placeObjects = require('../util/ObjectPlacer.js');
 
-function Game(ctx) {
+function Game(ctx, options) {
   this.ctx = ctx;
+  this.options = Game.defaultOptions;
+  if (options) helpers.objectMerge(this.options, options);
 
-  // var gResult = VoronoiGenerator(70, 70, 4);
-  var gResult = sweepMapGenerator(70, 70, 4);
+  var size = Game.dimensions[this.options.size];
+  this.ySize = size[0];
+  this.xSize = size[1];
+
+  var gResult = sweepMapGenerator(this.ySize, this.xSize, this.options.numPlayers);
   this.map = new GameMap(gResult.grid);
-  this.map.placeCreatureAt(0, 0, {
-    image: window.resourceImages.sprites.darkElemental
-  });
+  // this.map.placeCreatureAt(0, 0, { // for testing
+  //   image: window.resourceImages.sprites.darkElemental
+  // });
+
   this.nav = new NavMap(this.map);
   this.battle = null;
+
+  this.startingPlaces = gResult.zones.map(function (zone) {
+    return {
+      point: zone.origin,
+      player: null
+    };
+  });
+
+  this.human = new HumanPlayer('Sam', Game.playerColors[0]);
+  var humanStart = this.randomStartingPlace();
+  this.human.setStart(this.map, humanStart);
+  this.map.discover(humanStart);
+  this.map.focusOn(humanStart);
+
+  this.computers = [];
+  var color, player, start, tileType;
+  for (var i = 0; i < this.options.numPlayers; i++) {
+    color = Game.playerColors[i + 1];
+    player = new ComputerPlayer(color);
+
+    start = this.randomStartingPlace();
+    player.setStart(this.map, start);
+
+    computers.push(player);
+  }
 
   // placeObjects(this.map, gResult.zones, makeSettlement);
 
   this.canvasRender();
 }
+
+Game.defaultOptions = {
+  numPlayers: 2,
+  size: 'medium'
+};
+
+Game.dimensions = {
+  small:      [50,  60],
+  medium:     [75,  90],
+  large:      [100, 120],
+  extraLarge: [150, 180]
+};
+
+Game.playerColors = [
+  'red', 'blue', 'green', 'purple', 'orange', 'yellow'
+];
+
+Game.prototype.placeOpen = function (place) {
+  var players = [this.human].concat(this.computers);
+  return !!players.find(function (player) {
+    return player.start[0] === place[0] && player.start[1] === place[1];
+  });
+};
+
+Game.prototype.randomStartingPlace = function () {
+  var positions = this.startingPlaces.filter(this.placeOpen.bind(this));
+  return helpers.randomChoice(positions);
+};
 
 Game.prototype.canvasRender = function () {
   this.map.render(this.ctx);

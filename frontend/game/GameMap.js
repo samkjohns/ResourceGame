@@ -325,8 +325,9 @@ GameMap.prototype.render = function (ctx) {
         ctx, currentWest, hex, GameMap.EDGE_LENGTH,
         rowIdx, colIdx, self.hexGameMap.rows, self.hexGameMap.cols,
         drawnLines, drawnHexes,
-        // helpers.getGradient.bind(null, self.animating)
-        helpers.getShowAll.bind(null, self.animating)
+        helpers.getFillType.bind(null, self.animating)    // with shadows
+        // helpers.getShowAll.bind(null, self.animating)  // show all tiles (debugging)
+        // helpers.getGradient.bind(null, self.animating) // gradient       (debugging)
       );
 
       // then draw objects
