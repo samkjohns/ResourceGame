@@ -1,4 +1,6 @@
 var Settlement = require('./Settlement'),
+    HumanPlayer = require('./HumanPlayer'),
+    ComputerPlayer = require('./ComputerPlayer'),
     NavMap = require('./NavMap'),
     GameMap = require('./GameMap'),
     Types = require('../constants/types.js'),
@@ -25,18 +27,13 @@ function Game(ctx, options) {
   this.nav = new NavMap(this.map);
   this.battle = null;
 
-  this.startingPlaces = gResult.zones.map(function (zone) {
-    return {
-      point: zone.origin,
-      player: null
-    };
-  });
+  this.zones = gResult.zones;
 
   this.human = new HumanPlayer('Sam', Game.playerColors[0]);
-  var humanStart = this.randomStartingPlace();
+  var humanStart = this.randomStartingPlace(this.human);
   this.human.setStart(this.map, humanStart);
   this.map.discover(humanStart);
-  this.map.focusOn(humanStart);
+  this.map.setNewBounds(humanStart);
 
   this.computers = [];
   var color, player, start, tileType;
@@ -44,10 +41,10 @@ function Game(ctx, options) {
     color = Game.playerColors[i + 1];
     player = new ComputerPlayer(color);
 
-    start = this.randomStartingPlace();
+    start = this.randomStartingPlace(player);
     player.setStart(this.map, start);
 
-    computers.push(player);
+    this.computers.push(player);
   }
 
   // placeObjects(this.map, gResult.zones, makeSettlement);
@@ -56,7 +53,7 @@ function Game(ctx, options) {
 }
 
 Game.defaultOptions = {
-  numPlayers: 2,
+  numPlayers: 3,
   size: 'medium'
 };
 
@@ -71,16 +68,23 @@ Game.playerColors = [
   'red', 'blue', 'green', 'purple', 'orange', 'yellow'
 ];
 
-Game.prototype.placeOpen = function (place) {
-  var players = [this.human].concat(this.computers);
-  return !!players.find(function (player) {
-    return player.start[0] === place[0] && player.start[1] === place[1];
-  });
+var zoneOpen = function (zone) {
+  return !zone.player && zone.tiles.count() > 0;
 };
 
-Game.prototype.randomStartingPlace = function () {
-  var positions = this.startingPlaces.filter(this.placeOpen.bind(this));
-  return helpers.randomChoice(positions);
+Game.prototype.randomStartingPlace = function (player) {
+  var grid = this.map.hexGameMap;
+  var zones = this.zones.filter(zoneOpen);
+  var zone = helpers.randomChoice(zones);
+  zone.player = player;
+
+  var nonMountains = zone.tiles.filter(function (tile) {
+    return tile.type !== 'mountain';
+  }).map(function (obj) {
+    return [obj.row, obj.col];
+  });
+
+  return helpers.randomChoice(nonMountains);
 };
 
 Game.prototype.canvasRender = function () {

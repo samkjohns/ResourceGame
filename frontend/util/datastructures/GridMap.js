@@ -62,19 +62,41 @@ GridMap.prototype.has = function (row, col) {
   return this.map[row] && this.map[row][col];
 };
 
+GridMap.prototype.count = function () {
+  var c = 0;
+  this.forEach(function () { c++; });
+  return c;
+};
+
 GridMap.prototype.forEach = function (callback) {
   var rowKeys = Object.keys(this.map);
   var colKeys, row, col, value;
   for (var i = 0; i < rowKeys.length; i++) {
-    row = rowKeys[i];
+    row = parseInt(rowKeys[i]);
     colKeys = Object.keys(this.map[row]);
     // console.log(i + " " + row);
     for (var j = 0; j < colKeys.length; j++) {
-      col = colKeys[j];
+      col = parseInt(colKeys[j]);
       value = this.get(row, col);
       callback(value, row, col);
     }
   }
+};
+
+GridMap.prototype.filter = function (callback) {
+  var output = [];
+
+  this.forEach(function (value, row, col) {
+    if (callback(value, row, col)) {
+      output.push({
+        value: value,
+        row: row,
+        col: col
+      });
+    }
+  });
+
+  return output;
 };
 
 module.exports = GridMap;

@@ -101,6 +101,12 @@ HexGrid.prototype.neighborTiles = function (row, col) {
 
   Object.keys(coords).forEach(function (dir) {
     var point = HexGrid.addPoints(coords[dir], [row, col]);
+    // if (point[0] === undefined || point[1] === undefined || point[0] < 0 || point[1] < 0) {
+    //   console.log('direction: ' + dir);
+    //   console.log('coords[dir]: ' + coords[dir]);
+    //   console.log(`... + [${row}, ${col}]: ${point}`);
+    //   // debugger
+    // }
     if (self.inBounds(point[0], point[1])) {
       tiles.push(self.valueAt(point));
     }
@@ -180,6 +186,22 @@ HexGrid.prototype.forEach = function (callback, bounds) {
     }
   }
 
+};
+
+HexGrid.prototype.filter = function (callback, bounds) {
+  var output = [];
+
+  this.forEach(function (tile, i, j) {
+    if (callback(tile, i, j)) {
+      output.push({
+        tile: tile,
+        row: i,
+        col: j
+      });
+    }
+  }, bounds);
+
+  return output;
 };
 
 HexGrid.verticesFor = function (

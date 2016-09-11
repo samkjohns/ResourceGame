@@ -220,14 +220,29 @@ GameMap.prototype.setNewBounds = function (coords) {
   }
 };
 
-GameMap.prototype.discover = function (row, col) {
-  this.hexGameMap.valueAt(row, col).discovered = true;
-  var neighbors = this.hexGameMap.neighborsOf(row, col);
+GameMap.prototype.discover = function (r, c) {
+  var row, col;
+  if (c) {
+    row = r;
+    col = c;
+  } else {
+    row = r[0];
+    col = r[1];
+  }
 
-  Object.keys(neighbors).forEach(function (dir) {
-    var neighbor = neighbors[dir];
+
+  // console.log(`discover ${row}, ${col} (${typeof row}, ${typeof col})`);
+  // if (row === undefined) debugger
+  this.hexGameMap.valueAt(row, col).discovered = true;
+  this.hexGameMap.neighborTiles(row, col).forEach(function (neighbor) {
     neighbor.discovered = true;
   });
+  // var neighbors = this.hexGameMap.neighborsOf(row, col);
+  //
+  // Object.keys(neighbors).forEach(function (dir) {
+  //   var neighbor = neighbors[dir];
+  //   neighbor.discovered = true;
+  // });
 };
 
 GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
@@ -247,6 +262,7 @@ GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
       self.selection.row = toCoords[0];
       self.selection.col = toCoords[1];
 
+      console.log(`toCoords: ${toCoords}`);
       self.discover(toCoords[0], toCoords[1]);
 
       if (pathIdx === 0) {
@@ -276,7 +292,7 @@ GameMap.prototype.move = function (rerender) {
 
 GameMap.prototype.renderObjects = function (ctx, hex, rowIdx, colIdx) {
   // if (!hex.discovered) return;
-  if (!hex) return;
+  if (!hex || !hex.discovered) return;
 
   var nwX, nwY;
   nwX = ((colIdx - this.left) * (GameMap.EDGE_LENGTH + GameMap.HALF_EDGE)) + 10;

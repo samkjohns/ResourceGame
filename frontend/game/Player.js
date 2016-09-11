@@ -1,9 +1,10 @@
 var helpers = require('../util/helpers');
+var Civilian = require('./Civilian');
 
-HumanPlayer.extends(Player);
-ComputerPlayer.extends(Player);
+var id = 0;
 
 function Player(color) {
+  this.id = ++id;
   this.color = color;
   this.civilians = [];
   this.creatures = [];
@@ -18,7 +19,7 @@ Player.Neutral = function () {
 
 Player.prototype.setStart = function (map, start) {
   this.start = start;
-  var tileType = map.grid.valueAt(start).type;
+  var tileType = map.hexGameMap.valueAt(start).type;
   var startCivilian = Civilian.starter(tileType);
   map.placeCreatureAt(start[0], start[1], startCivilian);
   this.civilians.push(Civilian.starter(tileType));
@@ -33,14 +34,5 @@ Player.prototype.territory = function () {
 
   return territory;
 };
-
-function HumanPlayer(name, color) {
-  this.superClass.call(this, color);
-  this.name = name;
-}
-
-function ComputerPlayer(color) {
-  this.superClass.call(this, color);
-}
 
 module.exports = Player;

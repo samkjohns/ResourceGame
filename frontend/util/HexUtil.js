@@ -54,11 +54,14 @@ var HexUtil = {
       var lowerRight = [vertices.E[0], vertices.SE[1]];
       var size = [lowerRight[0] - upperLeft[0], lowerRight[1] - upperLeft[1]];
       var img = window.resourceImages.tiles[hex.type];
-      ctx.drawImage(
-        img,
-        upperLeft[0], upperLeft[1],
-        size[0], size[1]
-      );
+
+      if (hex.discovered) {
+        ctx.drawImage(
+          img,
+          upperLeft[0], upperLeft[1],
+          size[0], size[1]
+        );
+      }
 
       if (hex.territoryOf || hex.settlement || hex.inPath) {
         ctx.beginPath();

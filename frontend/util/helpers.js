@@ -4,7 +4,6 @@ Function.prototype.extends = function (parentClass) {
   function Surrogate() {}
   Surrogate.prototype = parentClass.prototype;
   this.prototype = new Surrogate();
-  this.superClass = parentClass;
 };
 
 var HelperUtil = module.exports = {
@@ -138,12 +137,14 @@ var HelperUtil = module.exports = {
   },
 
   getFillType: function (animating, ctx, hex) {
+    // console.log(hex.discovered);
     if (hex.discovered) {
       var style = (hex.inPath && !animating) ?
         "rgba(255, 0, 0, .5)" : types.colors[hex.type];
       ctx.fillStyle = style;
 
     } else {
+      // console.log('undiscovered');
       ctx.fillStyle = 'black';
     }
 

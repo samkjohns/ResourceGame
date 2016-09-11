@@ -69,6 +69,7 @@ Settlement.prototype._recordSeed = function (creatureType) {
 // generates a random creature based on the location
 Settlement.prototype.generateRandomSeed = function () {
   var weights = types.occurrenceRates[this.location.tile.type];
+  if (!weights) debugger
   var etype = chooseElemType(weights);
   var ptype = choosePhysType(weights, etype);
   var etypes = {};
@@ -233,6 +234,7 @@ Settlement.prototype.toString = function () {
 };
 
 function chooseElemType(rates) {
+  if (!rates) debugger
   var eWeights = [];
   var runningSum = 0;
   var eTypes = types.creatures;

@@ -80,7 +80,7 @@ function assignTilesToZones(grid, origins) {
     return {
       origin: origin,
       temperature: temp, // placeholder
-      tiles: []
+      tiles: new GridMap()
     };
   });
 
@@ -88,7 +88,7 @@ function assignTilesToZones(grid, origins) {
     var closest = closestOrigin([i, j], zones);
     tile.zone = closest.zone;
     tile.zoneDistance = closest.magnitude;
-    tile.zone && tile.zone.tiles.push(tile);
+    tile.zone && tile.zone.tiles.set(i, j, tile);
   });
 
   return zones;
@@ -129,7 +129,7 @@ function placeLeyLines(grid, zones) {
     prevZone = zones[i - 1];
 
     var line = priorityFirstPath(grid, zone.origin, prevZone.origin, function () { return false; });
-    line.forEach(_setLeyLine);
+    line && line.forEach(_setLeyLine);
   }
 }
 
@@ -191,7 +191,7 @@ function sweepMapGenerator(rows, cols, nPlayers) {
   assignAllZones(grid, zones);
   consolidateTiles(grid);
 
-  placeLeyLines(grid, zones);
+  // placeLeyLines(grid, zones);
 
   return {
     grid: grid,
