@@ -291,9 +291,10 @@ GameMap.prototype.discover = function (r, c) {
 
 GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
   var self = this;
-  var creature = this.selection.creature;
+  var creature = this.fromSelection.creature;
 
-  var fromCoords = [this.selection.row, this.selection.col];
+  // var fromCoords = [this.fromSelection.row, this.fromSelection.col];
+  var fromCoords = this.path[pathIdx + 1];
   var fromHex = this.hexGameMap.valueAt(fromCoords);
 
   var toCoords = this.path[pathIdx];
@@ -318,6 +319,8 @@ GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
       self.discover(toCoords[0], toCoords[1]);
 
       if (pathIdx === 0) {
+        self.selection = null;
+        self.fromSelection = null;
         self.resetPath();
         rerender();
         success && success(self, pathIdx, rerender);
