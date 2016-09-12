@@ -41,6 +41,13 @@ var HelperUtil = module.exports = {
     if (flag) console.log(message);
   },
 
+  pointsEqual: function (p1, p2) {
+    return(
+      p1[0] === p2[0] &&
+      p1[1] === p2[1]
+    );
+  },
+
   // min is inclusive, max is exclusive
   between: function (val, min, max) {
     return val >= min && val < max;

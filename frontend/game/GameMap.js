@@ -1,6 +1,6 @@
 // var testGameMap = require('./resources/testmap');
 var DetailActions = require('../actions/DetailActions.js');
-var breadthFirstPath = require('../util/PathFinder.js');
+var priorityFirstPath = require('../util/PathFinder.js');
 var HexUtil = require('../util/HexUtil.js');
 var Types = require('../constants/types.js');
 var helpers = require('../util/helpers.js');
@@ -8,7 +8,8 @@ var debug_log = helpers.debug_log;
 
 function GameMap (grid) {
   this.hexGameMap = grid;
-  this.selection = null;
+  this.fromSelection = null;    // the 'from' hex when setting a route
+  this.selection = null;        // the last clicked hex
   this.upper = 0;
   this.left = 0;
   this.lower = GameMap.DISPLAY_SIZE_Y;
@@ -33,6 +34,7 @@ GameMap.prototype.placeObjectAt = function (row, col, object) {
 
 GameMap.prototype.placeCreatureAt = function (row, col, creature) {
   this.hexGameMap.valueAt(row, col).creature = creature;
+  console.log(this.hexGameMap.valueAt(row, col));
 };
 
 GameMap.prototype.placeVisitableObjectAt = function (row, col, visitable) {
@@ -77,6 +79,7 @@ GameMap.isVisitable = function (tile) {
 
 GameMap.prototype.setSelectedPathTo = function (path) {
   this.resetPath();
+  console.log(path);
   if (path) {
     this.path = path;
     path.forEach(function (coords) {
@@ -150,6 +153,22 @@ GameMap.prototype.handleKey = function (dir, rerender) {
   rerender();
 };
 
+/*
+
+  1:
+  selection: null --> (clicked)
+  fromSelec: null --> (clicked) if (clicked) has a creature
+
+  2:
+  selection: y    --> (clicked)
+  fromSelec: null --> (clicked) if (clicked) has a creature
+
+  3:
+  selection: y --> (clicked)
+  fromSelec: y --> fromSelec
+
+*/
+
 GameMap.prototype.handleClick = function (evnt) {
   var selection = this.hexGameMap.clickedHex(
     evnt,                 // the click event
@@ -157,40 +176,74 @@ GameMap.prototype.handleClick = function (evnt) {
     10, 10,               // pixel offsets
     this.upper, this.left // row and column offsets
   );
+
   var hexVal = selection.hex;
-  if (!hexVal || !hexVal.discovered) { return false; }
+  if (!hexVal || !hexVal.discovered) { return false; } // to do nothing or to deselect?
 
-  if (this.selection && this.selection.hex.creature) {
-    var selectionClicked = (
-      (selection.row === this.selection.row) &&
-      (selection.col === this.selection.col)
-    );
+  this.selection = selection;
 
-    var flag = true;
+  if (!this.fromSelection && hexVal.creature) {
+    this.fromSelection = selection;
+    DetailActions.updateDetail(this.selection);
+    return true;
 
-    if (!selectionClicked) {
-      const start = [this.selection.row, this.selection.col];
-      const goal = [selection.row, selection.col];
-      var path = breadthFirstPath(
-        this.hexGameMap, start, goal, GameMap.isObstacle
-      );
-      // console.log(path);
+  } else if (this.fromSelection) {
+    var start = [this.fromSelection.row, this.fromSelection.col];
+    var goal = [selection.row, selection.col];
+    var path;
+
+    if (!helpers.pointsEqual(start, goal)) {
+      path = priorityFirstPath(this.hexGameMap, start, goal, GameMap.isObstacle);
       this.setSelectedPathTo(path);
-      flag = path && path.length > 0;
     }
 
-    this.selection = selection;
     DetailActions.updateDetail(this.selection);
-
-    return flag;
-
-  } else {
-    this.selection = selection;
-    DetailActions.updateDetail(this.selection);
-
-    return true;
+    return path && path.length > 2;
   }
+
 };
+
+// GameMap.prototype.handleClick = function (evnt) {
+//   var selection = this.hexGameMap.clickedHex(
+//     evnt,                 // the click event
+//     GameMap.EDGE_LENGTH,  // hex sizes
+//     10, 10,               // pixel offsets
+//     this.upper, this.left // row and column offsets
+//   );
+//   var hexVal = selection.hex;
+//   if (!hexVal || !hexVal.discovered) { return false; }
+//
+//   if (this.selection && this.selection.hex.creature) {
+//     var selectionClicked = (
+//       (selection.row === this.selection.row) &&
+//       (selection.col === this.selection.col)
+//     );
+//
+//     var flag = true;
+//
+//     if (!selectionClicked) {
+//       var start = [this.selection.row, this.selection.col];
+//       var goal = [selection.row, selection.col];
+//       var path = breadthFirstPath(
+//         this.hexGameMap, start, goal, GameMap.isObstacle
+//       );
+//       // console.log(path);
+//       this.setSelectedPathTo(path);
+//       flag = path && path.length > 0;
+//     }
+//
+//     this.selection = selection;
+//     DetailActions.updateDetail(this.selection);
+//
+//     return flag;
+//
+//   } else {
+//     this.selection = selection;
+//     DetailActions.updateDetail(this.selection);
+//
+//     return true;
+//   }
+// };
 
 GameMap.prototype.setNewBounds = function (coords) {
   var n_upper = coords[0] - Math.floor(GameMap.DISPLAY_SIZE_Y / 2);
@@ -230,19 +283,10 @@ GameMap.prototype.discover = function (r, c) {
     col = r[1];
   }
 
-
-  // console.log(`discover ${row}, ${col} (${typeof row}, ${typeof col})`);
-  // if (row === undefined) debugger
   this.hexGameMap.valueAt(row, col).discovered = true;
   this.hexGameMap.neighborTiles(row, col).forEach(function (neighbor) {
     neighbor.discovered = true;
   });
-  // var neighbors = this.hexGameMap.neighborsOf(row, col);
-  //
-  // Object.keys(neighbors).forEach(function (dir) {
-  //   var neighbor = neighbors[dir];
-  //   neighbor.discovered = true;
-  // });
 };
 
 GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
@@ -253,16 +297,24 @@ GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
   var fromHex = this.hexGameMap.valueAt(fromCoords);
 
   var toCoords = this.path[pathIdx];
+  console.log(`idx: ${pathIdx}`);
+  console.log(`from: ${fromCoords}`);
+  console.log(`to: ${toCoords}`);
   var toHex = this.hexGameMap.valueAt(toCoords);
 
   window.setTimeout(
     function () {
+      // console.log(fromHex);
+      // console.log('-->');
+      // console.log(toHex);
       toHex.creature = fromHex.creature;
       fromHex.creature = null;
+      // console.log(fromHex);
+      // console.log('-->');
+      // console.log(toHex);
       self.selection.row = toCoords[0];
       self.selection.col = toCoords[1];
 
-      console.log(`toCoords: ${toCoords}`);
       self.discover(toCoords[0], toCoords[1]);
 
       if (pathIdx === 0) {
