@@ -50,7 +50,7 @@ GameMap.prototype.placeAt = function (row, col, type, thing) {
   tile[type] = thing;
 };
 
-GameMap.isObstacle = function (tile) {
+GameMap.isObstacle = function (mover, tile) {
   if (!tile.discovered) return true;
 
   var obstacles = ['creature', 'settlement', 'visitable'];
@@ -65,6 +65,10 @@ GameMap.isObstacle = function (tile) {
   return false;
 };
 
+function getIsObstacle(mover) {
+  return GameMap.isObstacle.bind(null, mover);
+}
+
 GameMap.isVisitable = function (tile) {
   var visitables = ['visitable', 'settlement', 'creature'];
 
@@ -77,14 +81,44 @@ GameMap.isVisitable = function (tile) {
   return false;
 };
 
-GameMap.prototype.setSelectedPathTo = function (path) {
+// will have to refactor this to account for movement points
+// also will have to account for different terrain having different costs
+// (that will also require a change in path finding to take movement cost into account)
+// see 'refactoredSetSelectedPathTo' for the above changes
+// GameMap.prototype.setSelectedPathTo = function (path, mover) {
+//   this.resetPath();
+//   // console.log(path);
+//   if (path) {
+//     this.path = path; // l - idx - 1
+//     path.forEach(function (coords) {
+//       this.hexGameMap.valueAt(coords).inPath = true;
+//     }.bind(this));
+//   } else {
+//     this.path = [];
+//   }
+// };
+
+// this should work, but requires changes elsewhere to match it
+// namely, in animateAlong
+GameMap.prototype.setSelectedPathTo = function (path, mover) {
+  var self = this;
   this.resetPath();
-  console.log(path);
+
   if (path) {
-    this.path = path;
-    path.forEach(function (coords) {
-      this.hexGameMap.valueAt(coords).inPath = true;
-    }.bind(this));
+    this.path = path.map(function (point, idx) {
+      var numStepsIn = path.length - idx - 1;
+      var speed = (mover && mover.speed) || 2;
+      var numTurns = Math.ceil(numStepsIn / speed);
+      var obj = {
+        point: point,
+        steps: numStepsIn,
+        turns: numTurns
+      };
+
+      self.hexGameMap.valueAt(point).inPath = obj;
+      return obj;
+    });
+
   } else {
     this.path = [];
   }
@@ -169,6 +203,7 @@ GameMap.prototype.handleKey = function (dir, rerender) {
 
 */
 
+// refactored version
 GameMap.prototype.handleClick = function (evnt) {
   var selection = this.hexGameMap.clickedHex(
     evnt,                 // the click event
@@ -190,10 +225,14 @@ GameMap.prototype.handleClick = function (evnt) {
   } else if (this.fromSelection) {
     var start = [this.fromSelection.row, this.fromSelection.col];
     var goal = [selection.row, selection.col];
-    var path;
+    var path, mover;
 
     if (!helpers.pointsEqual(start, goal)) {
-      path = priorityFirstPath(this.hexGameMap, start, goal, GameMap.isObstacle);
+      var fromPoint = [this.fromSelection.row, this.fromSelection.col];
+      var fromHex = this.hexGameMap.valueAt(fromPoint);
+      console.log(fromHex);
+      mover = fromHex.creature || fromHex.mover;
+      path = priorityFirstPath(this.hexGameMap, start, goal, getIsObstacle(mover));
       this.setSelectedPathTo(path);
     }
 
@@ -203,6 +242,7 @@ GameMap.prototype.handleClick = function (evnt) {
 
 };
 
+// old version
 // GameMap.prototype.handleClick = function (evnt) {
 //   var selection = this.hexGameMap.clickedHex(
 //     evnt,                 // the click event
@@ -291,28 +331,21 @@ GameMap.prototype.discover = function (r, c) {
 
 GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
   var self = this;
-  var creature = this.fromSelection.creature;
 
-  // var fromCoords = [this.fromSelection.row, this.fromSelection.col];
-  var fromCoords = this.path[pathIdx + 1];
+  var fromCoords, toCoords;
+  fromCoords = this.path[pathIdx + 1];
+  // make this compatible with both versions of setSelectedPathTo
+  if (!(fromCoords instanceof Array)) { fromCoords = fromCoords.point; }
   var fromHex = this.hexGameMap.valueAt(fromCoords);
 
-  var toCoords = this.path[pathIdx];
-  console.log(`idx: ${pathIdx}`);
-  console.log(`from: ${fromCoords}`);
-  console.log(`to: ${toCoords}`);
+  toCoords = this.path[pathIdx];
+  if (!(toCoords instanceof Array)) { toCoords = toCoords.point; }
   var toHex = this.hexGameMap.valueAt(toCoords);
 
   window.setTimeout(
     function () {
-      // console.log(fromHex);
-      // console.log('-->');
-      // console.log(toHex);
       toHex.creature = fromHex.creature;
       fromHex.creature = null;
-      // console.log(fromHex);
-      // console.log('-->');
-      // console.log(toHex);
       self.selection.row = toCoords[0];
       self.selection.col = toCoords[1];
 
@@ -337,8 +370,12 @@ GameMap.prototype.animateAlong = function (pathIdx, rerender, success) {
 GameMap.prototype.move = function (rerender) {
   if (this.path && this.path.length > 0) {
     this.animating = true;
-    this.animateAlong(this.path.length - 2, rerender, function () {
-      this.animating = false;
+    // start at second to last point because the last one should be the starting point
+    // (in animateAlong, we move from pathIdx + 1 to pathIdx)
+    this.animateAlong(this.path.length - 2, rerender, function (self) {
+      console.log('success!');
+      console.log(self);
+      self.animating = false;
     }.bind(this));
     return true;
 

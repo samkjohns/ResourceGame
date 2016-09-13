@@ -4,6 +4,7 @@ var Creature = require('./Creature');
 function Civilian(species, ctype) {
   this.species = species;
   this.ctype = ctype;
+  this.speed = 2;
   this.image = ctype._getImage();
 }
 
